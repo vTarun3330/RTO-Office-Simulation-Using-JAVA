@@ -1,0 +1,78 @@
+/* Modern Professional Design System */
+* {
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+.root {
+    -fx-background-color: #ECF0F1; /* Light Gray Background */
+}
+
+/* Headings */
+.header-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50; /* Dark Blue */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.sub-header {
+    -fx-font-size: 18px;
+    -fx-text-fill: #7F8C8D;
+}
+
+/* Cards / Containers */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-padding: 30;
+}
+
+/* Inputs */
+.text-field, .password-field {
+    -fx-background-color: #FDFFE6;
+    -fx-border-color: #BDC3C7;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+    -fx-font-size: 14px;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #3498DB; /* Accent Blue */
+    -fx-background-color: white;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #3498DB;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.button:hover {
+    -fx-background-color: #2980B9;
+    -fx-effect: dropshadow(three-pass-box, rgba(52, 152, 219, 0.4), 10, 0, 0, 4);
+}
+
+.button:pressed {
+    -fx-background-color: #1F618D;
+}
+
+.button-secondary {
+    -fx-background-color: #95A5A6;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #7F8C8D;
+}
+
+/* Error Messages */
+.error-label {
+    -fx-text-fill: #E74C3C;
+    -fx-font-weight: bold;
+}
