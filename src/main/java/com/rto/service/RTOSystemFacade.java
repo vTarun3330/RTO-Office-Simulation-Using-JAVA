@@ -1,55 +1,288 @@
 package com.rto.service;
 
-import com.rto.model.User;
-import com.rto.model.Vehicle;
-import com.rto.patterns.VehicleBuilder;
-import com.rto.patterns.IPaymentProcessor;
+import com.rto.model.*;
+import com.rto.patterns.*;
+import com.rto.util.ValidationEngine;
 
-// Facade Pattern
+import java.util.List;
+
+/**
+ * Facade Pattern - The Central Controller.
+ * UI controllers ONLY talk to this Facade.
+ * The Facade orchestrates the Services and Database.
+ */
 public class RTOSystemFacade {
   private SessionManager session;
+  private UserService userService;
+  private VehicleService vehicleService;
+  private LicenseService licenseService;
+  private TransactionService transactionService;
 
   public RTOSystemFacade() {
     this.session = SessionManager.getInstance();
+    this.userService = ServiceFactory.getUserService();
+    this.vehicleService = ServiceFactory.getVehicleService();
+    this.licenseService = ServiceFactory.getLicenseService();
+    this.transactionService = ServiceFactory.getTransactionService();
   }
 
-  public User login(String name, String password) {
-    return DatabaseService.getInstance().authenticate(name, password);
+  // ==================== AUTHENTICATION ====================
+
+  /**
+   * Authenticate user and log them in.
+   */
+  public User login(String username, String password) {
+    User user = userService.authenticate(username, password);
+    if (user != null) {
+      session.login(user);
+    }
+    return user;
   }
 
+  /**
+   * Logout current user.
+   */
+  public void logout() {
+    session.logout();
+  }
+
+  /**
+   * Register a new citizen user.
+   */
+  public boolean registerUser(String username, String password, String email) {
+    if (!ValidationEngine.isValidUsername(username)) {
+      System.out.println("Invalid username format");
+      return false;
+    }
+    if (!ValidationEngine.isValidPassword(password)) {
+      System.out.println("Password must be at least 6 characters");
+      return false;
+    }
+    if (!ValidationEngine.isValidEmail(email)) {
+      System.out.println("Invalid email format");
+      return false;
+    }
+    return userService.registerUser(username, password, email);
+  }
+
+  /**
+   * Get current logged-in user.
+   */
+  public User getCurrentUser() {
+    return session.getCurrentUser();
+  }
+
+  /**
+   * Check if user is logged in.
+   */
+  public boolean isLoggedIn() {
+    return session.isLoggedIn();
+  }
+
+  /**
+   * Check if current user is admin.
+   */
+  public boolean isAdmin() {
+    return isLoggedIn() && "ADMIN".equalsIgnoreCase(getCurrentUser().getRole());
+  }
+
+  // ==================== VEHICLE OPERATIONS ====================
+
+  /**
+   * Register a new vehicle using Builder pattern.
+   */
   public Vehicle registerVehicle(String type, String model, String spec) {
-    if (!session.isLoggedIn())
+    if (!isLoggedIn()) {
+      System.out.println("User must be logged in to register a vehicle");
       return null;
+    }
 
-    Vehicle vehicle = new VehicleBuilder()
-        .setOwnerId(session.getCurrentUser().getId())
-        .setType(type)
-        .setModel(model)
-        .setExtraData(spec)
-        .build();
+    try {
+      Vehicle vehicle = new VehicleBuilder()
+          .setOwnerId(getCurrentUser().getId())
+          .setType(type)
+          .setModel(model)
+          .setExtraData(spec)
+          .build();
 
-    if (DatabaseService.getInstance().registerVehicle(vehicle)) {
-      return vehicle;
+      if (vehicleService.registerVehicle(vehicle)) {
+        return vehicle;
+      }
+    } catch (IllegalArgumentException e) {
+      System.out.println("Vehicle registration failed: " + e.getMessage());
     }
     return null;
   }
 
-  public boolean payTax(IPaymentProcessor processor, double amount) {
-    return processor.processPayment(amount);
+  /**
+   * Get all vehicles for the current user.
+   */
+  public List<Vehicle> getMyVehicles() {
+    if (!isLoggedIn())
+      return List.of();
+    return vehicleService.getVehiclesByOwnerId(getCurrentUser().getId());
   }
 
-  public boolean applyForLicense(String type, String name, String email, String address, String bloodGroup) {
-    if (!session.isLoggedIn())
-      return false;
+  /**
+   * Get all vehicles (Admin only).
+   */
+  public List<Vehicle> getAllVehicles() {
+    if (!isAdmin())
+      return List.of();
+    return vehicleService.getAllVehicles();
+  }
 
-    com.rto.model.License license = new com.rto.model.License(
-        session.getCurrentUser().getId(),
+  /**
+   * Search vehicles by model.
+   */
+  public List<Vehicle> searchVehicles(String model) {
+    return vehicleService.searchVehiclesByModel(model);
+  }
+
+  /**
+   * Get vehicle by registration number.
+   */
+  public Vehicle getVehicle(String registrationNumber) {
+    return vehicleService.getVehicleByRegistration(registrationNumber);
+  }
+
+  // ==================== LICENSE OPERATIONS ====================
+
+  /**
+   * Apply for a new license with validation.
+   */
+  public boolean applyForLicense(String type, String name, String email, String address, String bloodGroup) {
+    if (!isLoggedIn()) {
+      System.out.println("User must be logged in to apply for a license");
+      return false;
+    }
+
+    if (!ValidationEngine.isValidEmail(email)) {
+      System.out.println("Invalid email format");
+      return false;
+    }
+
+    License license = new License(
+        getCurrentUser().getId(),
         type,
         name,
         email,
         address,
         bloodGroup);
 
-    return new LicenseService().applyForLicense(license);
+    return licenseService.applyForLicense(license);
+  }
+
+  /**
+   * Get all licenses for the current user.
+   */
+  public List<License> getMyLicenses() {
+    if (!isLoggedIn())
+      return List.of();
+    return licenseService.getLicensesByUserId(getCurrentUser().getId());
+  }
+
+  /**
+   * Get pending applications (Admin only).
+   */
+  public List<License> getPendingApplications() {
+    if (!isAdmin())
+      return List.of();
+    return licenseService.getPendingApplications();
+  }
+
+  /**
+   * Approve a license application (Admin only).
+   */
+  public boolean approveLicense(String licenseId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can approve licenses");
+      return false;
+    }
+    return licenseService.approveLicense(licenseId);
+  }
+
+  /**
+   * Reject a license application (Admin only).
+   */
+  public boolean rejectLicense(String licenseId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can reject licenses");
+      return false;
+    }
+    return licenseService.rejectLicense(licenseId);
+  }
+
+  // ==================== PAYMENT OPERATIONS ====================
+
+  /**
+   * Process a payment using the Adapter pattern.
+   */
+  public boolean processPayment(String cardNumber, String cvv, double amount) {
+    if (!isLoggedIn())
+      return false;
+
+    IPaymentProcessor processor = new PaymentGatewayAdapter(cardNumber, cvv);
+    boolean success = processor.processPayment(amount);
+
+    if (success) {
+      transactionService.recordTransaction(
+          getCurrentUser().getId(),
+          amount,
+          "CARD",
+          "TAX_PAYMENT",
+          null);
+    }
+
+    return success;
+  }
+
+  /**
+   * Calculate tax for a vehicle using Strategy pattern.
+   */
+  public double calculateTax(Vehicle vehicle) {
+    if (vehicle == null)
+      return 0.0;
+
+    TaxCalculationStrategy strategy = switch (vehicle.getType().toUpperCase()) {
+      case "CAR" -> new StandardTaxStrategy();
+      case "BIKE" -> new PremiumTaxStrategy();
+      case "TRUCK" -> new CommercialTaxStrategy();
+      default -> new StandardTaxStrategy();
+    };
+    return strategy.calculateTax(vehicle);
+  }
+
+  /**
+   * Calculate tax by vehicle type and value (simplified version without
+   * Strategy).
+   */
+  public double calculateTaxByValue(String vehicleType, double vehicleValue) {
+    return switch (vehicleType.toUpperCase()) {
+      case "CAR" -> vehicleValue * 0.10; // 10% for cars
+      case "BIKE" -> vehicleValue * 0.05; // 5% for bikes
+      case "TRUCK" -> vehicleValue * 0.12; // 12% for trucks
+      default -> vehicleValue * 0.10;
+    };
+  }
+
+  // ==================== ADMIN OPERATIONS ====================
+
+  /**
+   * Get all citizens (Admin only).
+   */
+  public List<User> getAllCitizens() {
+    if (!isAdmin())
+      return List.of();
+    return userService.getAllCitizens();
+  }
+
+  /**
+   * Get all licenses (Admin only).
+   */
+  public List<License> getAllLicenses() {
+    if (!isAdmin())
+      return List.of();
+    return licenseService.getAllLicenses();
   }
 }

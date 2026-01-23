@@ -1,6 +1,5 @@
 package com.rto.controller;
 
-import com.rto.patterns.PaymentGatewayAdapter;
 import com.rto.service.RTOSystemFacade;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
@@ -26,6 +25,11 @@ public class RegistrationController {
 
   public void initialize() {
     rtoFacade = new RTOSystemFacade();
+    // Initialize type choices if not set in FXML
+    if (typeBox.getItems().isEmpty()) {
+      typeBox.getItems().addAll("CAR", "BIKE", "TRUCK");
+      typeBox.setValue("CAR");
+    }
   }
 
   @FXML
@@ -34,22 +38,47 @@ public class RegistrationController {
     String type = typeBox.getValue();
     String spec = specField.getText();
 
-    // Use Adapter Pattern for payment
-    PaymentGatewayAdapter payment = new PaymentGatewayAdapter(cardField.getText(), cvvField.getText());
-    boolean success = rtoFacade.payTax(payment, 500.0); // Dummy fee
+    // Validate inputs
+    if (model == null || model.isBlank()) {
+      statusLabel.setText("Please enter vehicle model");
+      statusLabel.setStyle("-fx-text-fill: red;");
+      return;
+    }
 
-    if (success) {
+    if (type == null) {
+      statusLabel.setText("Please select vehicle type");
+      statusLabel.setStyle("-fx-text-fill: red;");
+      return;
+    }
+
+    // Use Adapter Pattern for payment via Facade
+    String cardNumber = cardField.getText();
+    String cvv = cvvField.getText();
+    double registrationFee = 500.0; // Base registration fee
+
+    boolean paymentSuccess = rtoFacade.processPayment(cardNumber, cvv, registrationFee);
+
+    if (paymentSuccess) {
       var vehicle = rtoFacade.registerVehicle(type, model, spec);
       if (vehicle != null) {
-        statusLabel.setText("Success! Vehicle Registered. Tax: " + vehicle.calculateTax());
+        double tax = vehicle.calculateTax();
+        statusLabel.setText("Success! Vehicle Registered. Reg#: " + vehicle.getRegistrationNumber() + ", Tax: ₹" + tax);
         statusLabel.setStyle("-fx-text-fill: green;");
+        clearFields();
       } else {
-        statusLabel.setText("Registration Failed.");
+        statusLabel.setText("Registration Failed. Please check if you're logged in.");
         statusLabel.setStyle("-fx-text-fill: red;");
       }
     } else {
-      statusLabel.setText("Payment Failed!");
+      statusLabel.setText("Payment Failed! Please check card details.");
       statusLabel.setStyle("-fx-text-fill: red;");
     }
+  }
+
+  private void clearFields() {
+    modelField.clear();
+    specField.clear();
+    cardField.clear();
+    cvvField.clear();
   }
 }

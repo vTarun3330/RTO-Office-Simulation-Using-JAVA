@@ -1,0 +1,23 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.rto:RTOSystem >--------------------------
+[INFO] Building RTOSystem 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:21 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ RTOSystem ---
+[INFO] Deleting C:\Users\saira\OneDrive\Desktop\SEM 6\OOAD Mini Project\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ RTOSystem ---
+[INFO] Copying 5 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.8.1:compile (default-compile) @ RTOSystem ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 40 source files to C:\Users\saira\OneDrive\Desktop\SEM 6\OOAD Mini Project\target\classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.837 s
+[INFO] Finished at: 2026-01-23T09:25:01+05:30
+[INFO] ------------------------------------------------------------------------

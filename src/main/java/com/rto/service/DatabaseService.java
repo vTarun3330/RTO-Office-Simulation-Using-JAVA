@@ -3,8 +3,6 @@ package com.rto.service;
 import com.rto.model.*;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Database Service - Singleton Pattern
@@ -49,7 +47,10 @@ public class DatabaseService {
                 username VARCHAR(100) NOT NULL UNIQUE,
                 password VARCHAR(100) NOT NULL,
                 role VARCHAR(20) NOT NULL,
-                email VARCHAR(100)
+                email VARCHAR(100),
+                full_name VARCHAR(150),
+                dob DATE,
+                phone VARCHAR(20)
             )
             """,
         // Vehicles table
@@ -62,6 +63,9 @@ public class DatabaseService {
                 manufacturing_year INT,
                 color VARCHAR(50),
                 engine_number VARCHAR(50),
+                make VARCHAR(100),
+                vin VARCHAR(17),
+                tax_status VARCHAR(20) DEFAULT 'PENDING',
                 FOREIGN KEY (owner_id) REFERENCES users(id)
             )
             """,
@@ -93,6 +97,32 @@ public class DatabaseService {
                 reference_id VARCHAR(50),
                 status VARCHAR(20),
                 FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+            """,
+        // Applications table (NEW)
+        """
+            CREATE TABLE IF NOT EXISTS applications (
+                app_id VARCHAR(50) PRIMARY KEY,
+                applicant_id VARCHAR(50) NOT NULL,
+                app_type VARCHAR(20) NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                remarks VARCHAR(500),
+                submission_date TIMESTAMP NOT NULL,
+                reference_id VARCHAR(50),
+                FOREIGN KEY (applicant_id) REFERENCES users(id)
+            )
+            """,
+        // Challans table (NEW)
+        """
+            CREATE TABLE IF NOT EXISTS challans (
+                challan_id VARCHAR(50) PRIMARY KEY,
+                vehicle_vin VARCHAR(50) NOT NULL,
+                offense_type VARCHAR(100) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                issue_date DATE NOT NULL,
+                is_paid BOOLEAN DEFAULT FALSE,
+                issued_by VARCHAR(50),
+                payment_transaction_id VARCHAR(50)
             )
             """
     };

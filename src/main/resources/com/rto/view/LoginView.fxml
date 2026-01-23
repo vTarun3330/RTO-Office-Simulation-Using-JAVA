@@ -2,29 +2,46 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
 <StackPane stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.rto.controller.LoginController">
-    <VBox alignment="CENTER" spacing="20.0" maxWidth="400" maxHeight="450" styleClass="card">
+    <VBox alignment="CENTER" spacing="20.0" maxWidth="420" maxHeight="500" styleClass="card-elevated">
         <padding>
             <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
         </padding>
 
-        <Label text="RTO Management" styleClass="header-label"/>
-        <Label text="Sign in to your account" styleClass="sub-header"/>
+        <!-- Logo / Header -->
+        <Label text="🚗 RTO Management" styleClass="header-label"/>
+        <Label text="Sign in to access your account" styleClass="sub-header"/>
         
-        <VBox spacing="10">
-            <TextField fx:id="usernameField" promptText="Username" />
-            <PasswordField fx:id="passwordField" promptText="Password" />
+        <!-- Form Fields -->
+        <VBox spacing="15">
+            <VBox spacing="5">
+                <Label text="Username" style="-fx-font-weight: bold; -fx-text-fill: #495057;"/>
+                <TextField fx:id="usernameField" promptText="Enter your username" />
+            </VBox>
+            <VBox spacing="5">
+                <Label text="Password" style="-fx-font-weight: bold; -fx-text-fill: #495057;"/>
+                <PasswordField fx:id="passwordField" promptText="Enter your password" />
+            </VBox>
         </VBox>
 
-        <Label fx:id="errorLabel" styleClass="error-label" visible="false"/>
+        <!-- Error/Success Message -->
+        <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>
         
-        <Button onAction="#handleLogin" text="Login" maxWidth="Infinity"/>
+        <!-- Action Buttons -->
+        <VBox spacing="10">
+            <Button onAction="#handleLogin" text="Login" maxWidth="Infinity"/>
+            <Button onAction="#handleRegister" text="Create New Account" maxWidth="Infinity" styleClass="button-secondary"/>
+        </VBox>
+        
+        <!-- Footer -->
+        <Label text="Default: admin/admin123 or user/user123" style="-fx-font-size: 11px; -fx-text-fill: #ADB5BD;"/>
     </VBox>
 </StackPane>

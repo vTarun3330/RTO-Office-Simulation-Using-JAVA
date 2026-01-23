@@ -48,6 +48,21 @@ public class TransactionService implements IService {
   }
 
   /**
+   * Convenience method to record a transaction with individual parameters.
+   */
+  public boolean recordTransaction(String userId, double amount, String paymentMethod,
+      String transactionType, String referenceId) {
+    Transaction txn = new Transaction();
+    txn.setUserId(userId);
+    txn.setAmount(amount);
+    txn.setPaymentMethod(paymentMethod);
+    txn.setTransactionType(transactionType);
+    txn.setReferenceId(referenceId);
+    txn.setStatus("SUCCESS");
+    return recordTransaction(txn);
+  }
+
+  /**
    * Get all transactions for a user
    */
   public List<Transaction> getTransactionsByUserId(String userId) {

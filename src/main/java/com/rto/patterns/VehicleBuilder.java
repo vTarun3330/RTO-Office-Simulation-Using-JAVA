@@ -3,13 +3,20 @@ package com.rto.patterns;
 import com.rto.model.Vehicle;
 import com.rto.model.Car;
 import com.rto.model.Bike;
+import com.rto.model.Truck;
 
-// Builder Pattern to construct complex Vehicle objects
+/**
+ * Builder Pattern to construct complex Vehicle objects.
+ * Supports Car, Bike, and Truck types with fluent API.
+ */
 public class VehicleBuilder {
   private String ownerId;
   private String model;
   private String type;
-  private String extraData; // FuelType or CC
+  private String extraData; // FuelType, CC, or Load Capacity
+  private String color;
+  private int manufacturingYear;
+  private String engineNumber;
 
   public VehicleBuilder setOwnerId(String ownerId) {
     this.ownerId = ownerId;
@@ -31,12 +38,52 @@ public class VehicleBuilder {
     return this;
   }
 
+  public VehicleBuilder setColor(String color) {
+    this.color = color;
+    return this;
+  }
+
+  public VehicleBuilder setManufacturingYear(int year) {
+    this.manufacturingYear = year;
+    return this;
+  }
+
+  public VehicleBuilder setEngineNumber(String engineNumber) {
+    this.engineNumber = engineNumber;
+    return this;
+  }
+
   public Vehicle build() {
-    if ("CAR".equalsIgnoreCase(type)) {
-      return new Car(ownerId, model, extraData);
-    } else if ("BIKE".equalsIgnoreCase(type)) {
-      return new Bike(ownerId, model, Integer.parseInt(extraData));
+    Vehicle vehicle = switch (type.toUpperCase()) {
+      case "CAR" -> new Car(ownerId, model, extraData != null ? extraData : "PETROL");
+      case "BIKE" -> new Bike(ownerId, model, parseIntSafe(extraData, 150));
+      case "TRUCK" -> new Truck(ownerId, model, parseDoubleSafe(extraData, 5.0));
+      default -> throw new IllegalArgumentException("Unknown vehicle type: " + type);
+    };
+
+    if (color != null)
+      vehicle.setColor(color);
+    if (manufacturingYear > 0)
+      vehicle.setManufacturingYear(manufacturingYear);
+    if (engineNumber != null)
+      vehicle.setEngineNumber(engineNumber);
+
+    return vehicle;
+  }
+
+  private int parseIntSafe(String value, int defaultValue) {
+    try {
+      return value != null ? Integer.parseInt(value) : defaultValue;
+    } catch (NumberFormatException e) {
+      return defaultValue;
     }
-    return null;
+  }
+
+  private double parseDoubleSafe(String value, double defaultValue) {
+    try {
+      return value != null ? Double.parseDouble(value) : defaultValue;
+    } catch (NumberFormatException e) {
+      return defaultValue;
+    }
   }
 }
