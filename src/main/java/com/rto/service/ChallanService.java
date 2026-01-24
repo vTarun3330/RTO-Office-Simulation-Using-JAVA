@@ -26,20 +26,48 @@ public class ChallanService implements IService {
    * Issue a new challan for a vehicle.
    */
   public boolean issueChallan(Challan challan) {
-    String sql = """
-        INSERT INTO challans
-        (challan_id, vehicle_vin, offense_type, amount, issue_date, is_paid, issued_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        """;
+    if (challan == null) {
+        System.err.println("❌ ERROR: Cannot issue null challan");
+        return false;
+    }
+    
+    // Validation
+    if (challan.getVehicleVin() == null || challan.getVehicleVin().isEmpty()) {
+        System.err.println("❌ ERROR: Vehicle VIN required for challan");
+        return false;
+    }
+    if (challan.getAmount() <= 0) {
+        System.err.println("❌ ERROR: Challan amount must be positive");
+        return false;
+    }
 
-    return db.executeUpdate(sql,
-        challan.getChallanId(),
-        challan.getVehicleVin(),
-        challan.getOffenseType(),
-        challan.getAmount(),
-        Date.valueOf(challan.getIssueDate()),
-        challan.isPaid(),
-        challan.getIssuedBy());
+    try {
+        String sql = """
+            INSERT INTO challans
+            (challan_id, vehicle_vin, offense_type, amount, issue_date, is_paid, issued_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        boolean success = db.executeUpdate(sql,
+            challan.getChallanId(),
+            challan.getVehicleVin(),
+            challan.getOffenseType(),
+            challan.getAmount(),
+            Date.valueOf(challan.getIssueDate()),
+            challan.isPaid(),
+            challan.getIssuedBy());
+            
+        if (success) {
+            System.out.println("✅ Challan issued successfully: " + challan.getChallanId());
+        } else {
+            System.err.println("❌ ERROR: Failed to save challan to database");
+        }
+        return success;
+    } catch (Exception e) {
+        System.err.println("❌ ERROR: Unexpected error issuing challan: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    }
   }
 
   /**
@@ -97,8 +125,25 @@ public class ChallanService implements IService {
    * Mark a challan as paid.
    */
   public boolean payChallan(String challanId, String transactionId) {
-    String sql = "UPDATE challans SET is_paid = TRUE, payment_transaction_id = ? WHERE challan_id = ?";
-    return db.executeUpdate(sql, transactionId, challanId);
+    if (challanId == null || transactionId == null) {
+        System.err.println("❌ ERROR: Invalid parameters for paying challan");
+        return false;
+    }
+
+    try {
+        String sql = "UPDATE challans SET is_paid = TRUE, payment_transaction_id = ? WHERE challan_id = ?";
+        boolean success = db.executeUpdate(sql, transactionId, challanId);
+        
+        if (success) {
+            System.out.println("✅ Challan " + challanId + " marked as PAID");
+        } else {
+            System.err.println("❌ ERROR: Failed to update challan payment status. ID may be incorrect.");
+        }
+        return success;
+    } catch (Exception e) {
+        System.err.println("❌ ERROR: Unexpected error paying challan: " + e.getMessage());
+        return false;
+    }
   }
 
   /**

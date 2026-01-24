@@ -34,44 +34,50 @@ public class RegistrationController {
 
   @FXML
   private void handleSubmit() {
-    String model = modelField.getText();
-    String type = typeBox.getValue();
-    String spec = specField.getText();
-
-    // Validate inputs
-    if (model == null || model.isBlank()) {
-      statusLabel.setText("Please enter vehicle model");
-      statusLabel.setStyle("-fx-text-fill: red;");
-      return;
-    }
-
-    if (type == null) {
-      statusLabel.setText("Please select vehicle type");
-      statusLabel.setStyle("-fx-text-fill: red;");
-      return;
-    }
-
-    // Use Adapter Pattern for payment via Facade
-    String cardNumber = cardField.getText();
-    String cvv = cvvField.getText();
-    double registrationFee = 500.0; // Base registration fee
-
-    boolean paymentSuccess = rtoFacade.processPayment(cardNumber, cvv, registrationFee);
-
-    if (paymentSuccess) {
-      var vehicle = rtoFacade.registerVehicle(type, model, spec);
-      if (vehicle != null) {
-        double tax = vehicle.calculateTax();
-        statusLabel.setText("Success! Vehicle Registered. Reg#: " + vehicle.getRegistrationNumber() + ", Tax: ₹" + tax);
-        statusLabel.setStyle("-fx-text-fill: green;");
-        clearFields();
-      } else {
-        statusLabel.setText("Registration Failed. Please check if you're logged in.");
+    try {
+        String model = modelField.getText();
+        String type = typeBox.getValue();
+        String spec = specField.getText();
+    
+        // Validate inputs
+        if (model == null || model.isBlank()) {
+          statusLabel.setText("Please enter vehicle model");
+          statusLabel.setStyle("-fx-text-fill: red;");
+          return;
+        }
+    
+        if (type == null) {
+          statusLabel.setText("Please select vehicle type");
+          statusLabel.setStyle("-fx-text-fill: red;");
+          return;
+        }
+    
+        // Use Adapter Pattern for payment via Facade
+        String cardNumber = cardField.getText();
+        String cvv = cvvField.getText();
+        double registrationFee = 500.0; // Base registration fee
+    
+        boolean paymentSuccess = rtoFacade.processPayment(cardNumber, cvv, registrationFee);
+    
+        if (paymentSuccess) {
+          var vehicle = rtoFacade.registerVehicle(type, model, spec);
+          if (vehicle != null) {
+            double tax = vehicle.calculateTax();
+            statusLabel.setText("Success! Vehicle Registered. Reg#: " + vehicle.getRegistrationNumber() + ", Tax: ₹" + tax);
+            statusLabel.setStyle("-fx-text-fill: green;");
+            clearFields();
+          } else {
+            statusLabel.setText("Registration Failed. Please check if you're logged in.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+          }
+        } else {
+          statusLabel.setText("Payment Failed! Please check card details.");
+          statusLabel.setStyle("-fx-text-fill: red;");
+        }
+    } catch (Exception e) {
+        statusLabel.setText("Error: " + e.getMessage());
         statusLabel.setStyle("-fx-text-fill: red;");
-      }
-    } else {
-      statusLabel.setText("Payment Failed! Please check card details.");
-      statusLabel.setStyle("-fx-text-fill: red;");
+        e.printStackTrace();
     }
   }
 

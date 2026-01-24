@@ -26,12 +26,43 @@ public class UserService implements IService {
    * Register a new citizen user
    */
   public boolean registerUser(String username, String password, String email) {
+    // Input validation
+    if (username == null || username.trim().isEmpty()) {
+      System.err.println("❌ ERROR: Username cannot be empty");
+      return false;
+    }
+    if (password == null || password.length() < 6) {
+      System.err.println("❌ ERROR: Password must be at least 6 characters");
+      return false;
+    }
+    if (email == null || !email.contains("@")) {
+      System.err.println("❌ ERROR: Invalid email format");
+      return false;
+    }
+    
+    // Check for duplicate username
+    String checkSql = "SELECT COUNT(*) FROM users WHERE username = ?";
+    try (ResultSet rs = db.executeQuery(checkSql, username.trim())) {
+      if (rs != null && rs.next() && rs.getInt(1) > 0) {
+        System.err.println("❌ ERROR: Username '" + username + "' already exists");
+        return false;
+      }
+    } catch (SQLException e) {
+      System.err.println("❌ ERROR: Failed to check username: " + e.getMessage());
+      return false;
+    }
+    
     try {
       String userId = "USER-" + System.currentTimeMillis();
       String sql = "INSERT INTO users (id, username, password, role, email) VALUES (?, ?, ?, ?, ?)";
-      return db.executeUpdate(sql, userId, username, password, "CITIZEN", email);
+      boolean success = db.executeUpdate(sql, userId, username.trim(), password, "CITIZEN", email.trim());
+      if (success) {
+        System.out.println("✅ User registered successfully: " + username);
+      }
+      return success;
     } catch (Exception e) {
-      System.err.println("Error registering user: " + e.getMessage());
+      System.err.println("❌ ERROR: Failed to register user: " + e.getMessage());
+      e.printStackTrace();
       return false;
     }
   }
@@ -40,21 +71,38 @@ public class UserService implements IService {
    * Authenticate user
    */
   public User authenticate(String username, String password) {
+    if (username == null || username.trim().isEmpty()) {
+      System.err.println("❌ ERROR: Username cannot be empty");
+      return null;
+    }
+    if (password == null || password.isEmpty()) {
+      System.err.println("❌ ERROR: Password cannot be empty");
+      return null;
+    }
+    
     String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-    try (ResultSet rs = db.executeQuery(sql, username, password)) {
+    try (ResultSet rs = db.executeQuery(sql, username.trim(), password)) {
       if (rs != null && rs.next()) {
         String role = rs.getString("role");
         String id = rs.getString("id");
         String email = rs.getString("email");
 
-        return switch (role) {
+        User user = switch (role) {
           case "ADMIN" -> new Admin(id, username, password);
           case "RTO_OFFICER" -> new RTOOfficer(id, username, password);
           default -> new Citizen(id, username, password, email);
         };
+        System.out.println("✅ Authentication successful for: " + username);
+        return user;
+      } else {
+        System.err.println("⚠️  Authentication failed: Invalid credentials for " + username);
       }
     } catch (SQLException e) {
-      System.err.println("Error authenticating user: " + e.getMessage());
+      System.err.println("❌ ERROR: Database error during authentication: " + e.getMessage());
+      e.printStackTrace();
+    } catch (Exception e) {
+      System.err.println("❌ ERROR: Unexpected error during authentication: " + e.getMessage());
+      e.printStackTrace();
     }
     return null;
   }

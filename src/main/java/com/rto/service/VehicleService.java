@@ -26,8 +26,16 @@ public class VehicleService implements IService {
    * Register a new vehicle
    */
   public boolean registerVehicle(Vehicle vehicle) {
+    if (vehicle == null) {
+      System.err.println("❌ ERROR: Cannot register null vehicle");
+      return false;
+    }
+
     if (!vehicle.isValid()) {
-      System.out.println("Attempted to register invalid vehicle");
+      System.err.println("❌ ERROR: Invalid vehicle data:");
+      System.err.println("   - Owner ID: " + (vehicle.getOwnerId() == null ? "MISSING" : "OK"));
+      System.err.println("   - Model: " + (vehicle.getModel() == null || vehicle.getModel().isEmpty() ? "MISSING" : "OK"));
+      System.err.println("   - Year: " + (vehicle.getManufacturingYear() <= 1900 ? "INVALID" : "OK"));
       return false;
     }
 
@@ -41,7 +49,7 @@ public class VehicleService implements IService {
         VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
-    return db.executeUpdate(sql,
+    boolean success = db.executeUpdate(sql,
         vehicle.getRegistrationNumber(),
         vehicle.getOwnerId(),
         vehicle.getModel(),
@@ -49,19 +57,41 @@ public class VehicleService implements IService {
         vehicle.getManufacturingYear(),
         vehicle.getColor(),
         vehicle.getEngineNumber());
+        
+    if (success) {
+      System.out.println("✅ Vehicle registered successfully: " + regNumber);
+    } else {
+      System.err.println("❌ ERROR: Failed to register vehicle in database");
+    }
+    return success;
   }
 
   /**
    * Get vehicle by registrationNumber
    */
   public Vehicle getVehicleByRegistration(String registrationNumber) {
+    if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
+      System.err.println("❌ ERROR: Registration number cannot be null or empty");
+      return null;
+    }
+    
     String sql = "SELECT * FROM vehicles WHERE registration_number = ?";
-    try (ResultSet rs = db.executeQuery(sql, registrationNumber)) {
+    try (ResultSet rs = db.executeQuery(sql, registrationNumber.trim())) {
       if (rs != null && rs.next()) {
-        return mapResultSetToVehicle(rs);
+        Vehicle v = mapResultSetToVehicle(rs);
+        if (v != null) {
+          System.out.println("✅ Found vehicle: " + registrationNumber);
+        }
+        return v;
+      } else {
+        System.out.println("⚠️  No vehicle found with registration: " + registrationNumber);
       }
     } catch (SQLException e) {
-      System.err.println("Error getting vehicle: " + e.getMessage());
+      System.err.println("❌ ERROR: Database error while fetching vehicle: " + e.getMessage());
+      e.printStackTrace();
+    } catch (Exception e) {
+      System.err.println("❌ ERROR: Unexpected error: " + e.getMessage());
+      e.printStackTrace();
     }
     return null;
   }
@@ -71,13 +101,24 @@ public class VehicleService implements IService {
    */
   public List<Vehicle> getVehiclesByOwnerId(String ownerId) {
     List<Vehicle> vehicles = new ArrayList<>();
+    
+    if (ownerId == null || ownerId.trim().isEmpty()) {
+      System.err.println("❌ ERROR: Owner ID cannot be null or empty");
+      return vehicles; // Return empty list instead of null
+    }
+    
     String sql = "SELECT * FROM vehicles WHERE owner_id = ?";
-    try (ResultSet rs = db.executeQuery(sql, ownerId)) {
+    try (ResultSet rs = db.executeQuery(sql, ownerId.trim())) {
       while (rs != null && rs.next()) {
-        vehicles.add(mapResultSetToVehicle(rs));
+        Vehicle v = mapResultSetToVehicle(rs);
+        if (v != null) {
+          vehicles.add(v);
+        }
       }
+      System.out.println("✅ Found " + vehicles.size() + " vehicle(s) for owner: " + ownerId);
     } catch (SQLException e) {
-      System.err.println("Error getting vehicles for owner: " + e.getMessage());
+      System.err.println("❌ ERROR: Failed to get vehicles for owner: " + e.getMessage());
+      e.printStackTrace();
     }
     return vehicles;
   }

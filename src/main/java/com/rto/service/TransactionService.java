@@ -42,7 +42,9 @@ public class TransactionService implements IService {
           transaction.getReferenceId(),
           transaction.getStatus());
     } catch (Exception e) {
-      System.err.println("Error recording transaction: " + e.getMessage());
+      System.err.println("❌ ERROR: Failed to record transaction: " + e.getMessage());
+      System.err.println("   Values: User=" + transaction.getUserId() + ", Amount=" + transaction.getAmount());
+      e.printStackTrace();
       return false;
     }
   }

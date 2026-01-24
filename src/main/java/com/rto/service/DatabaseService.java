@@ -30,11 +30,17 @@ public class DatabaseService {
   private void initDatabase() {
     try {
       connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+      if (connection == null || connection.isClosed()) {
+        throw new SQLException("Failed to establish database connection");
+      }
       createTables();
       createDefaultAdmin();
-      System.out.println("Database initialized successfully at " + DB_URL);
+      System.out.println("✅ Database initialized successfully at " + DB_URL);
     } catch (SQLException e) {
-      System.err.println("Failed to initialize database: " + e.getMessage());
+      System.err.println("❌ CRITICAL: Failed to initialize database: " + e.getMessage());
+      System.err.println("   Please ensure H2 database is accessible and no other instance is running.");
+      e.printStackTrace();
+      throw new RuntimeException("Database initialization failed", e);
     }
   }
 
@@ -124,6 +130,111 @@ public class DatabaseService {
                 issued_by VARCHAR(50),
                 payment_transaction_id VARCHAR(50)
             )
+            """,
+        // Phase 1: Hypothecation tracking
+        """
+            CREATE TABLE IF NOT EXISTS hypothecations (
+                id VARCHAR(50) PRIMARY KEY,
+                vehicle_vin VARCHAR(50) NOT NULL,
+                bank_name VARCHAR(100) NOT NULL,
+                loan_account VARCHAR(50),
+                loan_amount DECIMAL(10,2),
+                start_date DATE,
+                is_active BOOLEAN DEFAULT TRUE,
+                noc_issued BOOLEAN DEFAULT FALSE,
+                noc_date DATE
+            )
+            """,
+        // Phase 1: Transfer requests
+        """
+            CREATE TABLE IF NOT EXISTS transfer_requests (
+                transfer_id VARCHAR(50) PRIMARY KEY,
+                vehicle_vin VARCHAR(50) NOT NULL,
+                seller_id VARCHAR(50) NOT NULL,
+                buyer_id VARCHAR(50),
+                buyer_mobile VARCHAR(20),
+                transfer_token VARCHAR(20) UNIQUE,
+                transfer_fee DECIMAL(10,2) DEFAULT 500.00,
+                status VARCHAR(20) DEFAULT 'INITIATED',
+                created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_date TIMESTAMP,
+                approved_by VARCHAR(50),
+                rejection_reason VARCHAR(500)
+            )
+            """,
+        // Phase 2: CBT Questions
+        """
+            CREATE TABLE IF NOT EXISTS cbt_questions (
+                question_id VARCHAR(50) PRIMARY KEY,
+                question_text VARCHAR(500) NOT NULL,
+                option_a VARCHAR(200) NOT NULL,
+                option_b VARCHAR(200) NOT NULL,
+                option_c VARCHAR(200) NOT NULL,
+                option_d VARCHAR(200) NOT NULL,
+                correct_answer CHAR(1) NOT NULL,
+                category VARCHAR(50)
+            )
+            """,
+        // Phase 2: CBT Results  
+        """
+            CREATE TABLE IF NOT EXISTS cbt_results (
+                result_id VARCHAR(50) PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                score INT NOT NULL,
+                total_questions INT NOT NULL,
+                passed BOOLEAN NOT NULL,
+                test_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+        // Phase 3: Test Slots
+        """
+            CREATE TABLE IF NOT EXISTS test_slots (
+                slot_id VARCHAR(50) PRIMARY KEY,
+                slot_date DATE NOT NULL,
+                slot_time TIME NOT NULL,
+                test_type VARCHAR(20) NOT NULL,
+                mvi_officer_id VARCHAR(50),
+                capacity INT DEFAULT 5,
+                booked_count INT DEFAULT 0
+            )
+            """,
+        // Phase 3: Slot Bookings
+        """
+            CREATE TABLE IF NOT EXISTS slot_bookings (
+                booking_id VARCHAR(50) PRIMARY KEY,
+                slot_id VARCHAR(50) NOT NULL,
+                user_id VARCHAR(50) NOT NULL,
+                license_id VARCHAR(50),
+                status VARCHAR(20) DEFAULT 'BOOKED',
+                test_result VARCHAR(20),
+                cooloff_until DATE
+            )
+            """,
+        // Phase 4: Documents
+        """
+            CREATE TABLE IF NOT EXISTS documents (
+                document_id VARCHAR(50) PRIMARY KEY,
+                application_id VARCHAR(50) NOT NULL,
+                application_type VARCHAR(20) NOT NULL,
+                document_type VARCHAR(50) NOT NULL,
+                file_path VARCHAR(500),
+                upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                status VARCHAR(20) DEFAULT 'PENDING',
+                verified_by VARCHAR(50),
+                verification_date TIMESTAMP,
+                rejection_reason VARCHAR(500)
+            )
+            """,
+        // Phase 5: Blacklist Log
+        """
+            CREATE TABLE IF NOT EXISTS blacklist_log (
+                log_id VARCHAR(50) PRIMARY KEY,
+                vehicle_vin VARCHAR(50) NOT NULL,
+                action VARCHAR(20) NOT NULL,
+                reason VARCHAR(500),
+                action_by VARCHAR(50),
+                action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
             """
     };
 
@@ -194,32 +305,63 @@ public class DatabaseService {
   }
 
   public Connection getConnection() {
+    try {
+      // Validate connection and reconnect if needed
+      if (connection == null || connection.isClosed()) {
+        System.out.println("⚠️  Database connection lost. Attempting to reconnect...");
+        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        System.out.println("✅ Database reconnected successfully");
+      }
+    } catch (SQLException e) {
+      System.err.println("❌ ERROR: Failed to reconnect to database: " + e.getMessage());
+      throw new RuntimeException("Database connection unavailable", e);
+    }
     return connection;
   }
 
-  // Generic CRUD operations
+  // Generic CRUD operations with auto-retry
   public boolean executeUpdate(String sql, Object... params) {
-    try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-      for (int i = 0; i < params.length; i++) {
-        pstmt.setObject(i + 1, params[i]);
+    int retries = 2;
+    while (retries >= 0) {
+      try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+        if (params != null) {
+          for (int i = 0; i < params.length; i++) {
+            pstmt.setObject(i + 1, params[i]);
+          }
+        }
+        pstmt.executeUpdate();
+        return true;
+      } catch (SQLException e) {
+        retries--;
+        if (retries < 0) {
+          System.err.println("❌ ERROR: executeUpdate failed after retries: " + e.getMessage());
+          System.err.println("   SQL: " + sql);
+          e.printStackTrace();
+          return false;
+        }
+        System.out.println("⚠️  Query failed, retrying... (" + retries + " attempts left)");
+        try { Thread.sleep(100); } catch (InterruptedException ie) { }
       }
-      pstmt.executeUpdate();
-      return true;
-    } catch (SQLException e) {
-      System.err.println("Error executing update: " + e.getMessage());
-      return false;
     }
+    return false;
   }
 
   public ResultSet executeQuery(String sql, Object... params) {
     try {
-      PreparedStatement pstmt = connection.prepareStatement(sql);
-      for (int i = 0; i < params.length; i++) {
-        pstmt.setObject(i + 1, params[i]);
+      PreparedStatement pstmt = getConnection().prepareStatement(sql);
+      if (params != null) {
+        for (int i = 0; i < params.length; i++) {
+          if (params[i] == null) {
+            System.out.println("⚠️  Warning: Null parameter at position " + (i+1) + " in query");
+          }
+         pstmt.setObject(i + 1, params[i]);
+        }
       }
       return pstmt.executeQuery();
     } catch (SQLException e) {
-      System.err.println("Error executing query: " + e.getMessage());
+      System.err.println("❌ ERROR: executeQuery failed: " + e.getMessage());
+      System.err.println("   SQL: " + sql);
+      e.printStackTrace();
       return null;
     }
   }

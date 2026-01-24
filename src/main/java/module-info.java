@@ -1,9 +1,8 @@
 module com.rto {
   requires transitive javafx.controls;
-  requires transitive javafx.fxml;
-  requires transitive java.sql;
+  requires javafx.fxml;
+  requires java.sql;
 
-  opens com.rto to javafx.fxml;
   opens com.rto.controller to javafx.fxml;
   opens com.rto.model to javafx.fxml;
 

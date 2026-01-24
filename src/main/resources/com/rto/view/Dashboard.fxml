@@ -35,6 +35,20 @@
                      </VBox>
                  </content>
              </Tab>
+             <Tab fx:id="transferTab" text="Transfer Ownership" closable="false">
+                 <content>
+                     <VBox alignment="CENTER" style="-fx-padding: 20;">
+                        <Label text="Transfer Form"/>
+                     </VBox>
+                 </content>
+             </Tab>
+             <Tab fx:id="cbtTab" text="Take LL Test" closable="false">
+                 <content>
+                     <VBox alignment="CENTER" style="-fx-padding: 20;">
+                        <Label text="CBT Test"/>
+                     </VBox>
+                 </content>
+             </Tab>
          </tabs>
       </TabPane>
    </center>

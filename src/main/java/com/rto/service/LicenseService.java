@@ -30,55 +30,107 @@ public class LicenseService implements IService {
    * Apply for a new license
    */
   public boolean applyForLicense(License license) {
+    if (license == null) {
+      System.err.println("❌ ERROR: License application cannot be null");
+      return false;
+    }
+    
+    // Validation
+    if (license.getUserId() == null || license.getUserId().isEmpty()) {
+       System.err.println("❌ ERROR: Applicant User ID is missing");
+       return false;
+    }
+    if (license.getLicenseType() == null) {
+        System.err.println("❌ ERROR: License type is required");
+        return false;
+    }
+
     String sql = """
         INSERT INTO licenses
         (license_id, user_id, license_type, status, applicant_name, applicant_email, applicant_address, blood_group)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-    boolean success = db.executeUpdate(sql,
-        license.getLicenseId(),
-        license.getUserId(),
-        license.getLicenseType(),
-        license.getStatus(),
-        license.getApplicantName(),
-        license.getApplicantEmail(),
-        license.getApplicantAddress(),
-        license.getBloodGroup());
+    try {
+        boolean success = db.executeUpdate(sql,
+            license.getLicenseId(),
+            license.getUserId(),
+            license.getLicenseType(),
+            license.getStatus(),
+            license.getApplicantName(),
+            license.getApplicantEmail(),
+            license.getApplicantAddress(),
+            license.getBloodGroup());
 
-    if (success && license.getApplicantEmail() != null) {
-      notificationSubject.attach(new EmailNotifier(license.getApplicantEmail()));
-      notificationSubject.notifyObservers(
-          "Your license application " + license.getLicenseId() + " has been submitted successfully!");
+        if (success) {
+            System.out.println("✅ License application submitted: " + license.getLicenseId());
+            if (license.getApplicantEmail() != null) {
+                // Wrap notification in try-catch to prevent non-critical failure
+                try {
+                    notificationSubject.attach(new EmailNotifier(license.getApplicantEmail()));
+                    notificationSubject.notifyObservers(
+                        "Your license application " + license.getLicenseId() + " has been submitted successfully!");
+                } catch (Exception e) {
+                    System.err.println("⚠️ Warning: Failed to send notification: " + e.getMessage());
+                }
+            }
+        } else {
+            System.err.println("❌ ERROR: Failed to save license application to database");
+        }
+        return success;
+    } catch (Exception e) {
+        System.err.println("❌ ERROR: Unexpected error during license application: " + e.getMessage());
+        e.printStackTrace();
+        return false;
     }
-
-    return success;
   }
 
   /**
    * Approve a license application
    */
   public boolean approveLicense(String licenseId) {
-    License license = getLicenseById(licenseId);
-    if (license == null)
-      return false;
-
-    license.approve();
-
-    String sql = "UPDATE licenses SET status = ?, issue_date = ?, expiry_date = ? WHERE license_id = ?";
-    boolean success = db.executeUpdate(sql,
-        license.getStatus(),
-        Date.valueOf(license.getIssueDate()),
-        Date.valueOf(license.getExpiryDate()),
-        licenseId);
-
-    if (success && license.getApplicantEmail() != null) {
-      notificationSubject.attach(new EmailNotifier(license.getApplicantEmail()));
-      notificationSubject.notifyObservers(
-          "Congratulations! Your license " + licenseId + " has been APPROVED!");
+    if (licenseId == null || licenseId.isEmpty()) {
+       System.err.println("❌ ERROR: License ID cannot be empty for approval");
+       return false;
     }
 
-    return success;
+    License license = getLicenseById(licenseId);
+    if (license == null) {
+       System.err.println("❌ ERROR: License not found with ID: " + licenseId);
+       return false;
+    }
+
+    try {
+        license.approve();
+
+        String sql = "UPDATE licenses SET status = ?, issue_date = ?, expiry_date = ? WHERE license_id = ?";
+        boolean success = db.executeUpdate(sql,
+            license.getStatus(),
+            Date.valueOf(license.getIssueDate()),
+            Date.valueOf(license.getExpiryDate()),
+            licenseId);
+
+        if (success) {
+             System.out.println("✅ License approved: " + licenseId);
+             if (license.getApplicantEmail() != null) {
+                 try {
+                    notificationSubject.attach(new EmailNotifier(license.getApplicantEmail()));
+                    notificationSubject.notifyObservers(
+                        "Congratulations! Your license " + licenseId + " has been APPROVED!");
+                 } catch (Exception n) {
+                     System.err.println("⚠️ Notification failed: " + n.getMessage());
+                 }
+             }
+        } else {
+            System.err.println("❌ ERROR: Failed to update license status in database");
+        }
+
+        return success;
+    } catch (Exception e) {
+        System.err.println("❌ ERROR: Failed to approve license: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    }
   }
 
   /**
@@ -198,5 +250,17 @@ public class LicenseService implements IService {
     license.setBloodGroup(rs.getString("blood_group"));
 
     return license;
+  }
+
+  /**
+   * Upgrade from LL to DL (called after passing driving test)
+   */
+  public boolean upgradeToDL(String userId) {
+    String sql = "UPDATE licenses SET license_stage = 'DL_ACTIVE', license_type = 'PERMANENT' WHERE user_id = ? AND license_stage = 'LL'";
+    boolean success = db.executeUpdate(sql, userId);
+    if (success) {
+      System.out.println("✅ License upgraded: LL → DL");
+    }
+    return success;
   }
 }

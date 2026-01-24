@@ -45,27 +45,33 @@ public class LicenseController {
 
   @FXML
   private void handleSubmit() {
-    String type = licenseTypeBox.getValue();
-    String name = nameField.getText();
-    String email = emailField.getText();
-    String address = addressField.getText();
-    String bg = bloodGroupBox.getValue();
-
-    if (address.isEmpty() || email.isEmpty()) {
-      statusLabel.setText("Please fill all fields.");
-      statusLabel.setStyle("-fx-text-fill: red;");
-      return;
-    }
-
-    boolean success = rtoFacade.applyForLicense(type, name, email, address, bg);
-
-    if (success) {
-      statusLabel.setText("Application Submitted Successfully!");
-      statusLabel.setStyle("-fx-text-fill: green;");
-      clearFields();
-    } else {
-      statusLabel.setText("Application Failed.");
-      statusLabel.setStyle("-fx-text-fill: red;");
+    try {
+        String type = licenseTypeBox.getValue();
+        String name = nameField.getText();
+        String email = emailField.getText();
+        String address = addressField.getText();
+        String bg = bloodGroupBox.getValue();
+    
+        if (address.isEmpty() || email.isEmpty()) {
+          statusLabel.setText("Please fill all fields.");
+          statusLabel.setStyle("-fx-text-fill: red;");
+          return;
+        }
+    
+        boolean success = rtoFacade.applyForLicense(type, name, email, address, bg);
+    
+        if (success) {
+          statusLabel.setText("Application Submitted Successfully!");
+          statusLabel.setStyle("-fx-text-fill: green;");
+          clearFields();
+        } else {
+          statusLabel.setText("Application Failed.");
+          statusLabel.setStyle("-fx-text-fill: red;");
+        }
+    } catch (Exception e) {
+        statusLabel.setText("Error: " + e.getMessage());
+        statusLabel.setStyle("-fx-text-fill: red;");
+        e.printStackTrace();
     }
   }
 

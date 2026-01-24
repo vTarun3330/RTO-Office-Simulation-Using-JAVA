@@ -49,20 +49,29 @@ public class RTOSystemFacade {
   /**
    * Register a new citizen user.
    */
+  /**
+   * Register a new citizen user.
+   */
   public boolean registerUser(String username, String password, String email) {
-    if (!ValidationEngine.isValidUsername(username)) {
-      System.out.println("Invalid username format");
-      return false;
+    try {
+        if (!ValidationEngine.isValidUsername(username)) {
+          System.err.println("❌ Validation Error: Invalid username format");
+          return false;
+        }
+        if (!ValidationEngine.isValidPassword(password)) {
+          System.err.println("❌ Validation Error: Password must be at least 6 characters");
+          return false;
+        }
+        if (!ValidationEngine.isValidEmail(email)) {
+          System.err.println("❌ Validation Error: Invalid email format");
+          return false;
+        }
+        return userService.registerUser(username, password, email);
+    } catch (Exception e) {
+        System.err.println("❌ CRITICAL ERROR in Facade (Register): " + e.getMessage());
+        e.printStackTrace();
+        return false;
     }
-    if (!ValidationEngine.isValidPassword(password)) {
-      System.out.println("Password must be at least 6 characters");
-      return false;
-    }
-    if (!ValidationEngine.isValidEmail(email)) {
-      System.out.println("Invalid email format");
-      return false;
-    }
-    return userService.registerUser(username, password, email);
   }
 
   /**
@@ -92,24 +101,29 @@ public class RTOSystemFacade {
    * Register a new vehicle using Builder pattern.
    */
   public Vehicle registerVehicle(String type, String model, String spec) {
-    if (!isLoggedIn()) {
-      System.out.println("User must be logged in to register a vehicle");
-      return null;
-    }
-
     try {
-      Vehicle vehicle = new VehicleBuilder()
-          .setOwnerId(getCurrentUser().getId())
-          .setType(type)
-          .setModel(model)
-          .setExtraData(spec)
-          .build();
-
-      if (vehicleService.registerVehicle(vehicle)) {
-        return vehicle;
+      if (!isLoggedIn()) {
+        System.out.println("⚠️  User must be logged in to register a vehicle");
+        return null;
       }
-    } catch (IllegalArgumentException e) {
-      System.out.println("Vehicle registration failed: " + e.getMessage());
+      
+      try {
+        Vehicle vehicle = new VehicleBuilder()
+            .setOwnerId(getCurrentUser().getId())
+            .setType(type)
+            .setModel(model)
+            .setExtraData(spec)
+            .build();
+  
+        if (vehicleService.registerVehicle(vehicle)) {
+          return vehicle;
+        }
+      } catch (IllegalArgumentException e) {
+        System.err.println("❌ Vehicle Builder Error: " + e.getMessage());
+      }
+    } catch (Exception e) {
+        System.err.println("❌ CRITICAL ERROR in Facade (RegisterVehicle): " + e.getMessage());
+        e.printStackTrace();
     }
     return null;
   }
@@ -151,26 +165,35 @@ public class RTOSystemFacade {
   /**
    * Apply for a new license with validation.
    */
+  /**
+   * Apply for a new license with validation.
+   */
   public boolean applyForLicense(String type, String name, String email, String address, String bloodGroup) {
-    if (!isLoggedIn()) {
-      System.out.println("User must be logged in to apply for a license");
-      return false;
+    try {
+        if (!isLoggedIn()) {
+          System.out.println("⚠️  User must be logged in to apply for a license");
+          return false;
+        }
+    
+        if (!ValidationEngine.isValidEmail(email)) {
+          System.err.println("❌ Validation Error: Invalid email format");
+          return false;
+        }
+    
+        License license = new License(
+            getCurrentUser().getId(),
+            type,
+            name,
+            email,
+            address,
+            bloodGroup);
+    
+        return licenseService.applyForLicense(license);
+    } catch (Exception e) {
+        System.err.println("❌ CRITICAL ERROR in Facade (ApplyLicense): " + e.getMessage());
+        e.printStackTrace();
+        return false;
     }
-
-    if (!ValidationEngine.isValidEmail(email)) {
-      System.out.println("Invalid email format");
-      return false;
-    }
-
-    License license = new License(
-        getCurrentUser().getId(),
-        type,
-        name,
-        email,
-        address,
-        bloodGroup);
-
-    return licenseService.applyForLicense(license);
   }
 
   /**

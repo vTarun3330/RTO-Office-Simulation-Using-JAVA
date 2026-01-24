@@ -26,6 +26,10 @@ public class DashboardController {
   private Tab vehicleTab;
   @FXML
   private Tab licenseTab;
+  @FXML
+  private Tab transferTab;
+  @FXML
+  private Tab cbtTab;
 
   // Admin-specific tabs (created dynamically)
   private Tab applicationsTab;
@@ -52,6 +56,12 @@ public class DashboardController {
 
     // Load License Application Form
     loadTabContent(licenseTab, "/com/rto/view/LicenseApplication.fxml");
+    
+    // Load Transfer Form (Phase 1 Feature)
+    loadTabContent(transferTab, "/com/rto/view/TransferView.fxml");
+    
+    // Load CBT Test (Phase 2 Feature)
+    loadTabContent(cbtTab, "/com/rto/view/CBTView.fxml");
 
     // Add Admin-specific tabs if user is admin
     if (isAdmin) {
@@ -226,34 +236,40 @@ public class DashboardController {
     Button issueBtn = new Button("Issue Challan");
     issueBtn.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white;");
     issueBtn.setOnAction(e -> {
-      String vin = vinField.getText();
-      String offense = offenseBox.getValue();
-      String amountStr = amountField.getText();
-
-      if (vin.isEmpty() || amountStr.isEmpty()) {
-        statusLabel.setText("Please fill all fields");
-        statusLabel.setStyle("-fx-text-fill: red;");
-        return;
-      }
-
       try {
-        double amount = Double.parseDouble(amountStr);
-        Challan challan = new Challan(vin, offense, amount,
-            SessionManager.getInstance().getCurrentUser().getId());
-
-        ChallanService challanService = new ChallanService();
-        if (challanService.issueChallan(challan)) {
-          statusLabel.setText("Challan issued: " + challan.getChallanId());
-          statusLabel.setStyle("-fx-text-fill: green;");
-          vinField.clear();
-          amountField.clear();
-        } else {
-          statusLabel.setText("Failed to issue challan");
+          String vin = vinField.getText();
+          String offense = offenseBox.getValue();
+          String amountStr = amountField.getText();
+    
+          if (vin.isEmpty() || amountStr.isEmpty()) {
+            statusLabel.setText("Please fill all fields");
+            statusLabel.setStyle("-fx-text-fill: red;");
+            return;
+          }
+    
+          try {
+            double amount = Double.parseDouble(amountStr);
+            Challan challan = new Challan(vin, offense, amount,
+                SessionManager.getInstance().getCurrentUser().getId());
+    
+            ChallanService challanService = new ChallanService();
+            if (challanService.issueChallan(challan)) {
+              statusLabel.setText("Challan issued: " + challan.getChallanId());
+              statusLabel.setStyle("-fx-text-fill: green;");
+              vinField.clear();
+              amountField.clear();
+            } else {
+              statusLabel.setText("Failed to issue challan");
+              statusLabel.setStyle("-fx-text-fill: red;");
+            }
+          } catch (NumberFormatException ex) {
+            statusLabel.setText("Invalid amount");
+            statusLabel.setStyle("-fx-text-fill: red;");
+          }
+      } catch (Exception ex) {
+          statusLabel.setText("Error: " + ex.getMessage());
           statusLabel.setStyle("-fx-text-fill: red;");
-        }
-      } catch (NumberFormatException ex) {
-        statusLabel.setText("Invalid amount");
-        statusLabel.setStyle("-fx-text-fill: red;");
+          ex.printStackTrace();
       }
     });
 
@@ -268,7 +284,12 @@ public class DashboardController {
 
   @FXML
   private void handleLogout() throws IOException {
-    SessionManager.getInstance().logout();
-    Main.setRoot("LoginView");
+    try {
+        SessionManager.getInstance().logout();
+        Main.setRoot("LoginView");
+    } catch (Exception e) {
+        System.err.println("Logout failed: " + e.getMessage());
+        e.printStackTrace();
+    }
   }
 }
