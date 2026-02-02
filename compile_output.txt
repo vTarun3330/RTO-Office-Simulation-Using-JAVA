@@ -1,0 +1,152 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.rto:RTOSystem >--------------------------
+[INFO] Building RTOSystem 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:17.0.6 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ RTOSystem ---
+[INFO] Copying 7 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ RTOSystem ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 55 source files with javac [debug deprecation target 17 module-path] to target\classes
+[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] location of system modules is not set in conjunction with -source 17
+  not setting the location of system modules may lead to class files that cannot run on JDK 17
+    --release 17 is recommended instead of -source 17 -target 17 because it sets the location of system modules automatically
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/BlacklistService.java:[44,29] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/BlacklistService.java:[75,29] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/CBTService.java:[100,26] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/CBTService.java:[134,22] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/CBTService.java:[195,28] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/DocumentService.java:[66,26] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/DocumentService.java:[92,22] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/HypothecationService.java:[116,26] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/SlotService.java:[33,22] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/SlotService.java:[78,32] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/TransferService.java:[56,26] trailing white space will be removed
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/Main.java:[10,8] class com.rto.Main in exported package com.rto declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/CBTService.java:[210,19] class com.rto.service.CBTService.CBTQuestion in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/CBTService.java:[246,19] class com.rto.service.CBTService.CBTResult in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/CBTController.java:[19,8] class com.rto.controller.CBTController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/DatabaseService.java:[307,10] interface java.sql.Connection in module java.sql is not indirectly exported using 'requires transitive'
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/DatabaseService.java:[349,10] interface java.sql.ResultSet in module java.sql is not indirectly exported using 'requires transitive'
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Vehicle.java:[6,17] serializable class com.rto.model.Vehicle has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/DashboardController.java:[19,8] class com.rto.controller.DashboardController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/License.java:[10,8] serializable class com.rto.model.License has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Transaction.java:[10,8] serializable class com.rto.model.Transaction has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/GodModeController.java:[14,8] class com.rto.controller.GodModeController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/BlacklistService.java:[168,19] class com.rto.service.BlacklistService.BlacklistLog in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/HypothecationService.java:[178,19] class com.rto.service.HypothecationService.Hypothecation in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/HypothecationService.java:[178,19] serializable class com.rto.service.HypothecationService.Hypothecation has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/TransferService.java:[288,19] class com.rto.service.TransferService.TransferRequest in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/LicenseController.java:[12,8] class com.rto.controller.LicenseController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/LoginController.java:[18,8] class com.rto.controller.LoginController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/RegistrationController.java:[9,8] class com.rto.controller.RegistrationController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/controller/TransferController.java:[16,8] class com.rto.controller.TransferController in exported package com.rto.controller declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Admin.java:[15,26] non-transient instance field of a serializable class declared with a non-serializable type
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Bike.java:[7,8] serializable class com.rto.model.Bike has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Car.java:[7,8] serializable class com.rto.model.Car has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Citizen.java:[16,26] non-transient instance field of a serializable class declared with a non-serializable type
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Citizen.java:[17,26] non-transient instance field of a serializable class declared with a non-serializable type
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Citizen.java:[22,22] possible 'this' escape before subclass is fully initialized
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/RTOOfficer.java:[18,26] non-transient instance field of a serializable class declared with a non-serializable type
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/model/Truck.java:[7,8] serializable class com.rto.model.Truck has no definition of serialVersionUID
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/patterns/CommercialTaxStrategy.java:[9,8] class com.rto.patterns.CommercialTaxStrategy in exported package com.rto.patterns declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/patterns/PremiumTaxStrategy.java:[9,8] class com.rto.patterns.PremiumTaxStrategy in exported package com.rto.patterns declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/patterns/StandardTaxStrategy.java:[8,8] class com.rto.patterns.StandardTaxStrategy in exported package com.rto.patterns declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/patterns/VehicleBuilder.java:[12,8] class com.rto.patterns.VehicleBuilder in exported package com.rto.patterns declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/DocumentService.java:[233,19] class com.rto.service.DocumentService.Document in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/ServiceFactory.java:[7,8] class com.rto.service.ServiceFactory in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/SlotService.java:[240,19] class com.rto.service.SlotService.TestSlot in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[WARNING] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/service/SlotService.java:[274,19] class com.rto.service.SlotService.SlotBooking in exported package com.rto.service declares no explicit constructors, thereby exposing a default constructor to clients of module com.rto
+[INFO] 47 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[66,21] no suitable constructor found for Citizen(java.lang.String,java.lang.String)
+    constructor com.rto.model.Citizen.Citizen(java.lang.String,java.lang.String,java.lang.String,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+    constructor com.rto.model.Citizen.Citizen(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.time.LocalDate,java.lang.String) is not applicable
+      (actual and formal argument lists differ in length)
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[203,54] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[208,52] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[213,58] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[234,35] cannot find symbol
+  symbol:   method calculateTax()
+  location: variable insuredCar of type com.rto.patterns.InsuranceDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[236,58] cannot find symbol
+  symbol:   method getDescription()
+  location: variable insuredCar of type com.rto.patterns.InsuranceDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[240,37] cannot find symbol
+  symbol:   method calculateTax()
+  location: variable warrantyCar of type com.rto.patterns.ExtendedWarrantyDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[242,66] cannot find symbol
+  symbol:   method getDescription()
+  location: variable warrantyCar of type com.rto.patterns.ExtendedWarrantyDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[245,76] incompatible types: com.rto.patterns.InsuranceDecorator cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[246,36] cannot find symbol
+  symbol:   method calculateTax()
+  location: variable fullFeatureCar of type com.rto.patterns.VehicleFeatureDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[258,42] constructor EmailNotifier in class com.rto.patterns.EmailNotifier cannot be applied to given types;
+  required: java.lang.String
+  found:    no arguments
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[259,40] constructor SMSNotifier in class com.rto.patterns.SMSNotifier cannot be applied to given types;
+  required: java.lang.String
+  found:    no arguments
+  reason: actual and formal argument lists differ in length
+[INFO] 12 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.197 s
+[INFO] Finished at: 2026-01-26T15:27:56+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project RTOSystem: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[66,21] no suitable constructor found for Citizen(java.lang.String,java.lang.String)
+[ERROR]     constructor com.rto.model.Citizen.Citizen(java.lang.String,java.lang.String,java.lang.String,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR]     constructor com.rto.model.Citizen.Citizen(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.time.LocalDate,java.lang.String) is not applicable
+[ERROR]       (actual and formal argument lists differ in length)
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[203,54] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[208,52] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[213,58] incompatible types: int cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[234,35] cannot find symbol
+[ERROR]   symbol:   method calculateTax()
+[ERROR]   location: variable insuredCar of type com.rto.patterns.InsuranceDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[236,58] cannot find symbol
+[ERROR]   symbol:   method getDescription()
+[ERROR]   location: variable insuredCar of type com.rto.patterns.InsuranceDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[240,37] cannot find symbol
+[ERROR]   symbol:   method calculateTax()
+[ERROR]   location: variable warrantyCar of type com.rto.patterns.ExtendedWarrantyDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[242,66] cannot find symbol
+[ERROR]   symbol:   method getDescription()
+[ERROR]   location: variable warrantyCar of type com.rto.patterns.ExtendedWarrantyDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[245,76] incompatible types: com.rto.patterns.InsuranceDecorator cannot be converted to com.rto.model.Vehicle
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[246,36] cannot find symbol
+[ERROR]   symbol:   method calculateTax()
+[ERROR]   location: variable fullFeatureCar of type com.rto.patterns.VehicleFeatureDecorator
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[258,42] constructor EmailNotifier in class com.rto.patterns.EmailNotifier cannot be applied to given types;
+[ERROR]   required: java.lang.String
+[ERROR]   found:    no arguments
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/saira/OneDrive/Desktop/RTO_Office_Simulation_Using_Java/src/main/java/com/rto/test/ComprehensiveSystemTest.java:[259,40] constructor SMSNotifier in class com.rto.patterns.SMSNotifier cannot be applied to given types;
+[ERROR]   required: java.lang.String
+[ERROR]   found:    no arguments
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

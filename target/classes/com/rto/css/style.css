@@ -140,6 +140,13 @@
     -fx-background-color: #C82333;
 }
 
+/* Small Action Buttons (for tables) */
+.button-small {
+    -fx-padding: 6 12;
+    -fx-font-size: 12px;
+    -fx-min-width: 70;
+}
+
 /* Link Button */
 .hyperlink {
     -fx-text-fill: #667eea;

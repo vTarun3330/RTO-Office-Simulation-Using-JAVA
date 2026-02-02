@@ -175,7 +175,7 @@ public class DatabaseService {
                 category VARCHAR(50)
             )
             """,
-        // Phase 2: CBT Results  
+        // Phase 2: CBT Results
         """
             CREATE TABLE IF NOT EXISTS cbt_results (
                 result_id VARCHAR(50) PRIMARY KEY,
@@ -234,6 +234,22 @@ public class DatabaseService {
                 reason VARCHAR(500),
                 action_by VARCHAR(50),
                 action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+        // Vehicle Registration Requests (for citizen approval workflow)
+        """
+            CREATE TABLE IF NOT EXISTS vehicle_requests (
+                request_id VARCHAR(50) PRIMARY KEY,
+                applicant_id VARCHAR(50) NOT NULL,
+                applicant_name VARCHAR(100),
+                vehicle_type VARCHAR(20) NOT NULL,
+                vehicle_model VARCHAR(100) NOT NULL,
+                vehicle_spec VARCHAR(100),
+                status VARCHAR(20) DEFAULT 'PENDING',
+                submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                approved_by VARCHAR(50),
+                approval_date TIMESTAMP,
+                FOREIGN KEY (applicant_id) REFERENCES users(id)
             )
             """
     };
@@ -340,7 +356,10 @@ public class DatabaseService {
           return false;
         }
         System.out.println("⚠️  Query failed, retrying... (" + retries + " attempts left)");
-        try { Thread.sleep(100); } catch (InterruptedException ie) { }
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ie) {
+        }
       }
     }
     return false;
@@ -352,9 +371,9 @@ public class DatabaseService {
       if (params != null) {
         for (int i = 0; i < params.length; i++) {
           if (params[i] == null) {
-            System.out.println("⚠️  Warning: Null parameter at position " + (i+1) + " in query");
+            System.out.println("⚠️  Warning: Null parameter at position " + (i + 1) + " in query");
           }
-         pstmt.setObject(i + 1, params[i]);
+          pstmt.setObject(i + 1, params[i]);
         }
       }
       return pstmt.executeQuery();

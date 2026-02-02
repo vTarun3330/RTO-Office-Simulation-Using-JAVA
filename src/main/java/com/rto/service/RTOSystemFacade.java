@@ -54,23 +54,23 @@ public class RTOSystemFacade {
    */
   public boolean registerUser(String username, String password, String email) {
     try {
-        if (!ValidationEngine.isValidUsername(username)) {
-          System.err.println("❌ Validation Error: Invalid username format");
-          return false;
-        }
-        if (!ValidationEngine.isValidPassword(password)) {
-          System.err.println("❌ Validation Error: Password must be at least 6 characters");
-          return false;
-        }
-        if (!ValidationEngine.isValidEmail(email)) {
-          System.err.println("❌ Validation Error: Invalid email format");
-          return false;
-        }
-        return userService.registerUser(username, password, email);
-    } catch (Exception e) {
-        System.err.println("❌ CRITICAL ERROR in Facade (Register): " + e.getMessage());
-        e.printStackTrace();
+      if (!ValidationEngine.isValidUsername(username)) {
+        System.err.println("❌ Validation Error: Invalid username format");
         return false;
+      }
+      if (!ValidationEngine.isValidPassword(password)) {
+        System.err.println("❌ Validation Error: Password must be at least 6 characters");
+        return false;
+      }
+      if (!ValidationEngine.isValidEmail(email)) {
+        System.err.println("❌ Validation Error: Invalid email format");
+        return false;
+      }
+      return userService.registerUser(username, password, email);
+    } catch (Exception e) {
+      System.err.println("❌ CRITICAL ERROR in Facade (Register): " + e.getMessage());
+      e.printStackTrace();
+      return false;
     }
   }
 
@@ -106,7 +106,7 @@ public class RTOSystemFacade {
         System.out.println("⚠️  User must be logged in to register a vehicle");
         return null;
       }
-      
+
       try {
         Vehicle vehicle = new VehicleBuilder()
             .setOwnerId(getCurrentUser().getId())
@@ -114,7 +114,7 @@ public class RTOSystemFacade {
             .setModel(model)
             .setExtraData(spec)
             .build();
-  
+
         if (vehicleService.registerVehicle(vehicle)) {
           return vehicle;
         }
@@ -122,8 +122,8 @@ public class RTOSystemFacade {
         System.err.println("❌ Vehicle Builder Error: " + e.getMessage());
       }
     } catch (Exception e) {
-        System.err.println("❌ CRITICAL ERROR in Facade (RegisterVehicle): " + e.getMessage());
-        e.printStackTrace();
+      System.err.println("❌ CRITICAL ERROR in Facade (RegisterVehicle): " + e.getMessage());
+      e.printStackTrace();
     }
     return null;
   }
@@ -170,29 +170,29 @@ public class RTOSystemFacade {
    */
   public boolean applyForLicense(String type, String name, String email, String address, String bloodGroup) {
     try {
-        if (!isLoggedIn()) {
-          System.out.println("⚠️  User must be logged in to apply for a license");
-          return false;
-        }
-    
-        if (!ValidationEngine.isValidEmail(email)) {
-          System.err.println("❌ Validation Error: Invalid email format");
-          return false;
-        }
-    
-        License license = new License(
-            getCurrentUser().getId(),
-            type,
-            name,
-            email,
-            address,
-            bloodGroup);
-    
-        return licenseService.applyForLicense(license);
-    } catch (Exception e) {
-        System.err.println("❌ CRITICAL ERROR in Facade (ApplyLicense): " + e.getMessage());
-        e.printStackTrace();
+      if (!isLoggedIn()) {
+        System.out.println("⚠️  User must be logged in to apply for a license");
         return false;
+      }
+
+      if (!ValidationEngine.isValidEmail(email)) {
+        System.err.println("❌ Validation Error: Invalid email format");
+        return false;
+      }
+
+      License license = new License(
+          getCurrentUser().getId(),
+          type,
+          name,
+          email,
+          address,
+          bloodGroup);
+
+      return licenseService.applyForLicense(license);
+    } catch (Exception e) {
+      System.err.println("❌ CRITICAL ERROR in Facade (ApplyLicense): " + e.getMessage());
+      e.printStackTrace();
+      return false;
     }
   }
 
@@ -307,5 +307,116 @@ public class RTOSystemFacade {
     if (!isAdmin())
       return List.of();
     return licenseService.getAllLicenses();
+  }
+
+  // ==================== VEHICLE REQUEST OPERATIONS (Approval Workflow)
+  // ====================
+
+  /**
+   * Submit a vehicle registration request (for citizens).
+   * Admins should use registerVehicle() directly.
+   */
+  public boolean submitVehicleRequest(String type, String model, String spec) {
+    if (!isLoggedIn()) {
+      System.out.println("⚠️  User must be logged in to submit a vehicle request");
+      return false;
+    }
+
+    User currentUser = getCurrentUser();
+    VehicleRequest request = new VehicleRequest(
+        currentUser.getId(),
+        currentUser.getUsername(),
+        type,
+        model,
+        spec);
+
+    return vehicleService.submitVehicleRequest(request);
+  }
+
+  /**
+   * Get all pending vehicle registration requests (Admin only).
+   */
+  public List<VehicleRequest> getPendingVehicleRequests() {
+    if (!isAdmin())
+      return List.of();
+    return vehicleService.getPendingVehicleRequests();
+  }
+
+  /**
+   * Approve a vehicle registration request (Admin only).
+   */
+  public Vehicle approveVehicleRequest(String requestId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can approve vehicle requests");
+      return null;
+    }
+    return vehicleService.approveVehicleRequest(requestId, getCurrentUser().getId());
+  }
+
+  /**
+   * Reject a vehicle registration request (Admin only).
+   */
+  public boolean rejectVehicleRequest(String requestId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can reject vehicle requests");
+      return false;
+    }
+    return vehicleService.rejectVehicleRequest(requestId, getCurrentUser().getId());
+  }
+
+  /**
+   * Get vehicle requests for the current logged-in citizen.
+   */
+  public List<VehicleRequest> getMyVehicleRequests() {
+    if (!isLoggedIn())
+      return List.of();
+    return vehicleService.getVehicleRequestsByApplicant(getCurrentUser().getId());
+  }
+
+  // ==================== USER DETAILS (Admin) ====================
+
+  /**
+   * Get vehicles for a specific user (Admin only).
+   */
+  public List<Vehicle> getVehiclesByUserId(String userId) {
+    if (!isAdmin())
+      return List.of();
+    return vehicleService.getVehiclesByOwnerId(userId);
+  }
+
+  /**
+   * Get licenses for a specific user (Admin only).
+   */
+  public List<License> getLicensesByUserId(String userId) {
+    if (!isAdmin())
+      return List.of();
+    return licenseService.getLicensesByUserId(userId);
+  }
+
+  /**
+   * Get challans for a specific user (Admin only) - via their vehicles.
+   */
+  public List<Challan> getChallansByUserId(String userId) {
+    if (!isAdmin())
+      return List.of();
+    // Get all vehicles owned by user, then get challans for each
+    List<Vehicle> vehicles = vehicleService.getVehiclesByOwnerId(userId);
+    List<Challan> allChallans = new java.util.ArrayList<>();
+    ChallanService challanService = new ChallanService();
+    for (Vehicle v : vehicles) {
+      allChallans.addAll(challanService.getChallansByVehicle(v.getRegistrationNumber()));
+    }
+    return allChallans;
+  }
+
+  /**
+   * Update user info (Admin only).
+   */
+  public boolean updateUserInfo(String userId, String email, String phone, String fullName) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can update user info");
+      return false;
+    }
+    return userService.updateUserInfo(userId, email, phone, fullName);
   }
 }

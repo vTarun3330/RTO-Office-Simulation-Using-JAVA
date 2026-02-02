@@ -39,7 +39,7 @@ public class UserService implements IService {
       System.err.println("❌ ERROR: Invalid email format");
       return false;
     }
-    
+
     // Check for duplicate username
     String checkSql = "SELECT COUNT(*) FROM users WHERE username = ?";
     try (ResultSet rs = db.executeQuery(checkSql, username.trim())) {
@@ -51,7 +51,7 @@ public class UserService implements IService {
       System.err.println("❌ ERROR: Failed to check username: " + e.getMessage());
       return false;
     }
-    
+
     try {
       String userId = "USER-" + System.currentTimeMillis();
       String sql = "INSERT INTO users (id, username, password, role, email) VALUES (?, ?, ?, ?, ?)";
@@ -79,7 +79,7 @@ public class UserService implements IService {
       System.err.println("❌ ERROR: Password cannot be empty");
       return null;
     }
-    
+
     String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
     try (ResultSet rs = db.executeQuery(sql, username.trim(), password)) {
       if (rs != null && rs.next()) {
@@ -157,5 +157,17 @@ public class UserService implements IService {
   public boolean updateEmail(String userId, String newEmail) {
     String sql = "UPDATE users SET email = ? WHERE id = ?";
     return db.executeUpdate(sql, newEmail, userId);
+  }
+
+  /**
+   * Update user info (email, phone, full_name)
+   */
+  public boolean updateUserInfo(String userId, String email, String phone, String fullName) {
+    String sql = "UPDATE users SET email = ?, phone = ?, full_name = ? WHERE id = ?";
+    boolean success = db.executeUpdate(sql, email, phone, fullName, userId);
+    if (success) {
+      System.out.println("✅ User info updated for: " + userId);
+    }
+    return success;
   }
 }
