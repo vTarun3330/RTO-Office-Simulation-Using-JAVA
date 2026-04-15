@@ -132,6 +132,30 @@ public class UserService implements IService {
   }
 
   /**
+   * Get user by username
+   */
+  public User getUserByUsername(String username) {
+    String sql = "SELECT * FROM users WHERE username = ?";
+    try (ResultSet rs = db.executeQuery(sql, username)) {
+      if (rs != null && rs.next()) {
+        String id = rs.getString("id");
+        String pwd = rs.getString("password");
+        String role = rs.getString("role");
+        String email = rs.getString("email");
+
+        return switch (role) {
+          case "ADMIN" -> new Admin(id, username, pwd);
+          case "RTO_OFFICER" -> new RTOOfficer(id, username, pwd);
+          default -> new Citizen(id, username, pwd, email);
+        };
+      }
+    } catch (SQLException e) {
+      System.err.println("Error getting user by username: " + e.getMessage());
+    }
+    return null;
+  }
+
+  /**
    * Get all citizens
    */
   public List<User> getAllCitizens() {
@@ -169,5 +193,15 @@ public class UserService implements IService {
       System.out.println("✅ User info updated for: " + userId);
     }
     return success;
+  }
+
+  /**
+   * Delete user and all their associated data (Hard Delete)
+   */
+  public boolean deleteUser(String userId) {
+    if (userId == null || userId.trim().isEmpty()) {
+      return false;
+    }
+    return db.deleteUserCascade(userId);
   }
 }

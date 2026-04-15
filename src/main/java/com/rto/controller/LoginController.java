@@ -87,7 +87,8 @@ public class LoginController {
       }
 
       // Register user with a placeholder email (can be updated later)
-      String email = username + "@rto.temp";
+      // Note: ValidationEngine requires @gmail.com
+      String email = username + "@gmail.com";
       boolean success = rtoSystem.registerUser(username, password, email);
 
       if (success) {

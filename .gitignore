@@ -1,0 +1,56 @@
+# === Build Output ===
+target/
+out/
+maven/
+*.class
+
+# === Database Files ===
+rto_db.mv.db
+rto_db.trace.db
+
+# === Logs ===
+build.log
+build_utf8.log
+compile_output.txt
+
+# === Debug/Helper Utilities ===
+PeekDB.java
+PeekDB.class
+
+# === Internal Fix Notes ===
+ERROR_FIXES.md
+SETUP_FIX.md
+Setup-And-Run.ps1
+Simple-Run.ps1
+
+# === Reference PDFs (not part of project) ===
+K3.pdf
+K3_Mini_Project_Report.pdf
+OO.pdf
+Mini Project Guidelines.pdf
+DBMS Project Report - RTO Management System V2.pdf
+RTO Management System - Specification.pdf
+UML Class Diagram.pdf
+CRC Cards.pdf
+UE22CS352B_*.pptx
+
+# === Team doc (personal use only) ===
+team_use_case_assignments.pdf
+
+# === IDE Files ===
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+*~
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Migrations (unused) ===
+migrations/

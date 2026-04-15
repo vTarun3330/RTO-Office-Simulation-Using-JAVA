@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class ValidationEngine {
 
   // Regex Patterns
-  private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+  private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@gmail\\.com$");
   private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$"); // Indian mobile format
   private static final Pattern VIN_PATTERN = Pattern.compile("^[A-HJ-NPR-Z0-9]{17}$"); // Standard VIN format (17 chars,
                                                                                        // no I/O/Q)
@@ -125,5 +125,23 @@ public class ValidationEngine {
    */
   public static boolean verifyPassword(String password, String hash) {
     return hashPassword(password).equals(hash);
+  }
+
+  /**
+   * Validates Door Number (digits, -, / only).
+   */
+  public static boolean isValidDoorNo(String dNo) {
+    if (dNo == null || dNo.isBlank())
+      return false;
+    return dNo.matches("^[0-9\\-/]+$");
+  }
+
+  /**
+   * Validates Pincode (exactly 6 digits).
+   */
+  public static boolean isValidPincode(String pincode) {
+    if (pincode == null || pincode.isBlank())
+      return false;
+    return pincode.matches("^\\d{6}$");
   }
 }

@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import java.io.IOException;
 import java.util.List;
 
@@ -75,8 +76,20 @@ public class DashboardController {
   private void setupCitizenTabs() {
     Tab myRequestsTab = new Tab("My Requests");
     myRequestsTab.setClosable(false);
-    myRequestsTab.setContent(createMyRequestsPane());
-    mainTabPane.getTabs().add(myRequestsTab);
+    myRequestsTab.setContent(wrapInScrollPane(createMyRequestsPane()));
+
+    Tab myChallansTab = new Tab("My Challans");
+    myChallansTab.setClosable(false);
+    myChallansTab.setContent(wrapInScrollPane(createMyChallansPane()));
+
+    mainTabPane.getTabs().addAll(myRequestsTab, myChallansTab);
+  }
+
+  private ScrollPane wrapInScrollPane(javafx.scene.Node content) {
+    ScrollPane sp = new ScrollPane(content);
+    sp.setFitToWidth(true);
+    sp.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+    return sp;
   }
 
   @SuppressWarnings("unchecked")
@@ -148,6 +161,123 @@ public class DashboardController {
     table.setItems(FXCollections.observableArrayList(requests));
   }
 
+  @SuppressWarnings("unchecked")
+  private VBox createMyChallansPane() {
+    VBox container = new VBox(15);
+    container.setStyle("-fx-padding: 20; -fx-background-color: white;");
+
+    Label header = new Label("My Traffic Challans");
+    header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;");
+
+    Label infoLabel = new Label("View challans issued against your registered vehicles and pay fines.");
+    infoLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 13px;");
+
+    Label statusLabel = new Label();
+    statusLabel.setVisible(false);
+
+    TableView<com.rto.model.Challan> table = new TableView<>();
+    table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+    TableColumn<com.rto.model.Challan, String> idCol = new TableColumn<>("Challan ID");
+    idCol.setCellValueFactory(new PropertyValueFactory<>("challanId"));
+    idCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Challan, String> vehicleCol = new TableColumn<>("Vehicle");
+    vehicleCol.setCellValueFactory(new PropertyValueFactory<>("vehicleVin"));
+    vehicleCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Challan, String> offenseCol = new TableColumn<>("Offense");
+    offenseCol.setCellValueFactory(new PropertyValueFactory<>("offenseType"));
+    offenseCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Challan, Double> amountCol = new TableColumn<>("Fine (₹)");
+    amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
+    amountCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Challan, String> dateCol = new TableColumn<>("Date");
+    dateCol.setCellValueFactory(new PropertyValueFactory<>("issueDate"));
+    dateCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Challan, Boolean> paidCol = new TableColumn<>("Status");
+    paidCol.setCellValueFactory(new PropertyValueFactory<>("paid"));
+    paidCol.setCellFactory(col -> new TableCell<>() {
+      @Override
+      protected void updateItem(Boolean paid, boolean empty) {
+        super.updateItem(paid, empty);
+        if (empty || paid == null) {
+          setText(null);
+          setStyle("");
+        } else if (paid) {
+          setText("PAID ✅");
+          setStyle("-fx-text-fill: #27AE60; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        } else {
+          setText("UNPAID ❌");
+          setStyle("-fx-text-fill: #E74C3C; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        }
+      }
+    });
+
+    TableColumn<com.rto.model.Challan, Void> actionCol = new TableColumn<>("Action");
+    actionCol.setCellFactory(param -> new TableCell<>() {
+      private final Button payBtn = new Button("Pay Fine");
+      {
+        payBtn.setStyle("-fx-background-color: #28A745; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 16;");
+        payBtn.setOnAction(event -> {
+          com.rto.model.Challan challan = getTableView().getItems().get(getIndex());
+          if (challan.isPaid()) {
+            statusLabel.setText("This challan is already paid.");
+            statusLabel.setStyle("-fx-text-fill: #856404; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #fff3cd; -fx-border-color: #ffc107; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
+            statusLabel.setVisible(true);
+            return;
+          }
+
+          boolean success = rtoFacade.payMyChallan(challan.getChallanId());
+          if (success) {
+            statusLabel.setText("✅ Fine of ₹" + challan.getAmount() + " paid successfully for challan " + challan.getChallanId() + "!");
+            statusLabel.setStyle("-fx-text-fill: #155724; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #d4edda; -fx-border-color: #28a745; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
+            statusLabel.setVisible(true);
+            // Refresh table
+            refreshMyChallansTable(getTableView());
+          } else {
+            statusLabel.setText("❌ Payment failed. Please try again.");
+            statusLabel.setStyle("-fx-text-fill: #721c24; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #f8d7da; -fx-border-color: #dc3545; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
+            statusLabel.setVisible(true);
+          }
+        });
+      }
+
+      @Override
+      protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty) {
+          setGraphic(null);
+        } else {
+          com.rto.model.Challan challan = getTableView().getItems().get(getIndex());
+          if (challan != null && !challan.isPaid()) {
+            setGraphic(payBtn);
+          } else {
+            setGraphic(null);
+          }
+          setStyle("-fx-alignment: CENTER;");
+        }
+      }
+    });
+
+    table.getColumns().addAll(idCol, vehicleCol, offenseCol, amountCol, dateCol, paidCol, actionCol);
+    refreshMyChallansTable(table);
+
+    Button refreshBtn = new Button("Refresh");
+    refreshBtn.setOnAction(e -> refreshMyChallansTable(table));
+
+    container.getChildren().addAll(header, infoLabel, table, statusLabel, refreshBtn);
+    return container;
+  }
+
+  private void refreshMyChallansTable(TableView<com.rto.model.Challan> table) {
+    java.util.List<com.rto.model.Challan> challans = rtoFacade.getMyChallans();
+    table.setItems(FXCollections.observableArrayList(challans));
+  }
+
   private void loadTabContent(Tab tab, String fxmlPath) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -162,22 +292,22 @@ public class DashboardController {
     // Applications Review Tab (License)
     applicationsTab = new Tab("Review Applications");
     applicationsTab.setClosable(false);
-    applicationsTab.setContent(createApplicationsReviewPane());
+    applicationsTab.setContent(wrapInScrollPane(createApplicationsReviewPane()));
 
     // Vehicle Requests Tab (NEW)
     Tab vehicleRequestsTab = new Tab("Vehicle Requests");
     vehicleRequestsTab.setClosable(false);
-    vehicleRequestsTab.setContent(createVehicleRequestsPane());
+    vehicleRequestsTab.setContent(wrapInScrollPane(createVehicleRequestsPane()));
 
     // Users Management Tab
     usersTab = new Tab("Manage Users");
     usersTab.setClosable(false);
-    usersTab.setContent(createUsersManagementPane());
+    usersTab.setContent(wrapInScrollPane(createUsersManagementPane()));
 
     // Challans Tab
     challansTab = new Tab("Issue Challan");
     challansTab.setClosable(false);
-    challansTab.setContent(createChallansPane());
+    challansTab.setContent(wrapInScrollPane(createChallansPane()));
 
     mainTabPane.getTabs().addAll(applicationsTab, vehicleRequestsTab, usersTab, challansTab);
   }
@@ -395,7 +525,44 @@ public class DashboardController {
     roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
     roleCol.setStyle("-fx-alignment: CENTER;");
 
-    table.getColumns().addAll(idCol, usernameCol, roleCol);
+    TableColumn<User, Void> actionCol = new TableColumn<>("Actions");
+    actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<>() {
+      private final Button deleteButton = new Button("Delete");
+      {
+        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
+        deleteButton.setOnAction(event -> {
+          User u = getTableView().getItems().get(getIndex());
+          javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION, 
+              "Are you sure you want to delete user " + u.getUsername() + "?\nAll attached records will be permanently removed.", 
+              javafx.scene.control.ButtonType.YES, javafx.scene.control.ButtonType.NO);
+          alert.setHeaderText("Delete User");
+          
+          if (alert.showAndWait().orElse(javafx.scene.control.ButtonType.NO) == javafx.scene.control.ButtonType.YES) {
+            if (rtoFacade.deleteUser(u.getId())) {
+               List<User> updated = rtoFacade.getAllCitizens();
+               getTableView().setItems(FXCollections.observableArrayList(updated));
+               javafx.scene.control.Alert successAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION, "User successfully deleted.");
+               successAlert.showAndWait();
+            } else {
+               javafx.scene.control.Alert errorAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Failed to delete user.");
+               errorAlert.showAndWait();
+            }
+          }
+        });
+      }
+      @Override
+      protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty) {
+            setGraphic(null);
+        } else {
+            setGraphic(deleteButton);
+            setStyle("-fx-alignment: CENTER;");
+        }
+      }
+    });
+
+    table.getColumns().addAll(idCol, usernameCol, roleCol, actionCol);
 
     // Double-click handler to show user details
     table.setRowFactory(tv -> {
@@ -586,21 +753,21 @@ public class DashboardController {
 
           ChallanService challanService = new ChallanService();
           if (challanService.issueChallan(challan)) {
-            statusLabel.setText("Challan issued: " + challan.getChallanId());
-            statusLabel.setStyle("-fx-text-fill: green;");
+            statusLabel.setText("✅ Challan issued successfully: " + challan.getChallanId());
+            statusLabel.setStyle("-fx-text-fill: #155724; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #d4edda; -fx-border-color: #28a745; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
             vinField.clear();
             amountField.clear();
           } else {
-            statusLabel.setText("Failed to issue challan");
-            statusLabel.setStyle("-fx-text-fill: red;");
+            statusLabel.setText("❌ Failed to issue challan");
+            statusLabel.setStyle("-fx-text-fill: #721c24; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #f8d7da; -fx-border-color: #dc3545; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
           }
         } catch (NumberFormatException ex) {
-          statusLabel.setText("Invalid amount");
-          statusLabel.setStyle("-fx-text-fill: red;");
+          statusLabel.setText("❌ Invalid amount");
+          statusLabel.setStyle("-fx-text-fill: #721c24; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #f8d7da; -fx-border-color: #dc3545; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
         }
       } catch (Exception ex) {
-        statusLabel.setText("Error: " + ex.getMessage());
-        statusLabel.setStyle("-fx-text-fill: red;");
+        statusLabel.setText("❌ Error: " + ex.getMessage());
+        statusLabel.setStyle("-fx-text-fill: #721c24; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10; -fx-background-color: #f8d7da; -fx-border-color: #dc3545; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
         ex.printStackTrace();
       }
     });

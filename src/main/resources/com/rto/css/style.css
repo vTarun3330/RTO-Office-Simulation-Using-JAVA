@@ -212,17 +212,46 @@
     -fx-border-color: #DEE2E6;
 }
 
+.table-view .column-header-background {
+    -fx-background-color: #2C3E50;
+}
+
 .table-view .column-header {
-    -fx-background-color: #F8F9FA;
+    -fx-background-color: #2C3E50;
+    -fx-border-color: #1a252f;
+    -fx-border-width: 0 1 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 10;
+}
+
+.table-view .filler {
+    -fx-background-color: #2C3E50;
+}
+
+.table-cell {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 13px;
+    -fx-padding: 6 10;
 }
 
 .table-row-cell:odd {
-    -fx-background-color: #F8F9FA;
+    -fx-background-color: #F0F4F8;
+}
+
+.table-row-cell:even {
+    -fx-background-color: white;
 }
 
 .table-row-cell:selected {
     -fx-background-color: #667eea;
+}
+
+.table-row-cell:selected .table-cell {
     -fx-text-fill: white;
 }
 
@@ -259,3 +288,10 @@
     -fx-padding: 8 12;
     -fx-font-size: 12px;
 }
+
+/* Field Error Styling */
+.field-error {
+    -fx-border-color: #DC3545 !important;
+    -fx-border-width: 2 !important;
+    -fx-background-color: #FFF5F5 !important;
+}

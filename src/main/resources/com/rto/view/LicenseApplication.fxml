@@ -3,12 +3,15 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 
-<VBox spacing="15" alignment="TOP_CENTER" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.rto.controller.LicenseController">
+<ScrollPane fitToWidth="true" stylesheets="@../css/style.css" style="-fx-background: transparent; -fx-background-color: transparent;"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.rto.controller.LicenseController">
+  <VBox spacing="15" alignment="TOP_CENTER" style="-fx-padding: 20;">
     <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="500" styleClass="card">
         <Label text="Apply for Driving License" styleClass="header-label"/>
         <Label text="Fill out your details" styleClass="sub-header"/>
@@ -27,9 +30,36 @@
                  </VBox>
             </HBox>
             
-            <TextField fx:id="nameField" promptText="Full Name"/>
-            <TextField fx:id="emailField" promptText="Email Address"/>
-            <TextArea fx:id="addressField" promptText="Permanent Address" prefRowCount="3"/>
+            <VBox spacing="2">
+                <TextField fx:id="nameField" promptText="Full Name"/>
+                <Label fx:id="nameError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+            </VBox>
+            <VBox spacing="2">
+                <TextField fx:id="emailField" promptText="Email Address (e.g., user@gmail.com)"/>
+                <Label fx:id="emailError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+            </VBox>
+            <VBox spacing="2">
+                <TextField fx:id="dNoField" promptText="Door No (e.g. 101, 10-2/1)"/>
+                <Label fx:id="dNoError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+            </VBox>
+            <VBox spacing="2">
+                <TextField fx:id="addressLaneField" promptText="Address Lane / Street"/>
+                <Label fx:id="laneError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+            </VBox>
+            <HBox spacing="10">
+                <VBox HBox.hgrow="ALWAYS" spacing="2">
+                    <TextField fx:id="cityField" promptText="City"/>
+                    <Label fx:id="cityError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" spacing="2">
+                    <TextField fx:id="stateField" promptText="State"/>
+                    <Label fx:id="stateError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+                </VBox>
+            </HBox>
+            <VBox spacing="2">
+                <TextField fx:id="pincodeField" promptText="Pincode (6 digits)"/>
+                <Label fx:id="pincodeError" wrapText="true" style="-fx-text-fill: #DC3545; -fx-font-size: 11;" managed="false" visible="false"/>
+            </VBox>
         </VBox>
         
         <HBox alignment="CENTER_RIGHT" style="-fx-padding: 20 0 0 0;">
@@ -38,4 +68,5 @@
         
         <Label fx:id="statusLabel" wrapText="true" style="-fx-padding: 10 0 0 0;"/>
     </VBox>
-</VBox>
+  </VBox>
+</ScrollPane>

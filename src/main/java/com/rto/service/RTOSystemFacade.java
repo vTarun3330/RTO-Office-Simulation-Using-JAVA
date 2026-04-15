@@ -373,6 +373,38 @@ public class RTOSystemFacade {
     return vehicleService.getVehicleRequestsByApplicant(getCurrentUser().getId());
   }
 
+  /**
+   * Get all challans for the current logged-in citizen's vehicles.
+   */
+  public List<Challan> getMyChallans() {
+    if (!isLoggedIn())
+      return List.of();
+    List<Vehicle> vehicles = vehicleService.getVehiclesByOwnerId(getCurrentUser().getId());
+    List<Challan> allChallans = new java.util.ArrayList<>();
+    ChallanService challanService = new ChallanService();
+    for (Vehicle v : vehicles) {
+      allChallans.addAll(challanService.getChallansByVehicle(v.getRegistrationNumber()));
+    }
+    return allChallans;
+  }
+
+  /**
+   * Pay a challan fine for the current citizen.
+   */
+  public boolean payMyChallan(String challanId) {
+    if (!isLoggedIn())
+      return false;
+    ChallanService challanService = new ChallanService();
+    Challan challan = challanService.getChallanById(challanId);
+    if (challan == null || challan.isPaid()) {
+      return false;
+    }
+    // Record transaction
+    String txnId = "TXN-" + System.currentTimeMillis();
+    transactionService.recordTransaction(getCurrentUser().getId(), challan.getAmount(), "UPI", "CHALLAN_PAYMENT", challanId);
+    return challanService.payChallan(challanId, txnId);
+  }
+
   // ==================== USER DETAILS (Admin) ====================
 
   /**
@@ -418,5 +450,16 @@ public class RTOSystemFacade {
       return false;
     }
     return userService.updateUserInfo(userId, email, phone, fullName);
+  }
+
+  /**
+   * Delete a user (Admin only).
+   */
+  public boolean deleteUser(String userId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can delete users");
+      return false;
+    }
+    return userService.deleteUser(userId);
   }
 }

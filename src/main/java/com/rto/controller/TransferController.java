@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Transfer Controller - Handles vehicle ownership transfer
- * Seller flow: Select vehicle → Enter buyer mobile → Generate token
+ * Seller flow: Select vehicle → Enter buyer username → Generate token
  * Buyer flow: Enter token → Confirm transfer
  */
 public class TransferController {
@@ -26,7 +26,7 @@ public class TransferController {
     @FXML
     private ChoiceBox<String> vehicleChoiceBox;
     @FXML
-    private TextField buyerMobileField;
+    private TextField buyerUsernameField;
     @FXML
     private Label validationResultLabel;
     @FXML
@@ -44,12 +44,14 @@ public class TransferController {
     
     private TransferService transferService;
     private VehicleService vehicleService;
+    private UserService userService;
     private SessionManager session;
     private String currentUserId;
     
     public void initialize() {
         transferService = new TransferService();
         vehicleService = new VehicleService();
+        userService = new UserService();
         session = SessionManager.getInstance();
         
         if (session.isLoggedIn()) {
@@ -63,7 +65,7 @@ public class TransferController {
     }
     
     /**
-     * Load vehicles owned by current user into dropdown
+     * Load only admin-approved registered vehicles owned by current user
      */
     private void loadUserVehicles() {
         try {
@@ -113,29 +115,44 @@ public class TransferController {
     private void handleInitiateTransfer() {
         try {
             String selection = vehicleChoiceBox.getValue();
-            String buyerMobile = buyerMobileField.getText().trim();
+            String buyerUsername = buyerUsernameField.getText().trim();
             
-            if (selection == null || buyerMobile.isEmpty()) {
-                showError("Please select vehicle and enter buyer mobile");
+            if (selection == null || buyerUsername.isEmpty()) {
+                showError("Please select vehicle and enter buyer's username");
                 return;
             }
             
-            if (!buyerMobile.matches("\\d{10}")) {
-                showError("Please enter a valid 10-digit mobile number");
+            // Check that seller is not transferring to themselves
+            String currentUsername = session.getCurrentUser().getUsername();
+            if (buyerUsername.equalsIgnoreCase(currentUsername)) {
+                showError("You cannot transfer a vehicle to yourself!");
+                return;
+            }
+            
+            // Validate that buyer exists in the system
+            com.rto.model.User buyerUser = userService.getUserByUsername(buyerUsername);
+            if (buyerUser == null) {
+                showError("User '" + buyerUsername + "' does not exist. Please enter a valid registered username.");
+                return;
+            }
+            
+            // Ensure buyer is a CITIZEN, not an ADMIN
+            if ("ADMIN".equalsIgnoreCase(buyerUser.getRole())) {
+                showError("Cannot transfer a vehicle to an admin account.");
                 return;
             }
             
             String vehicleVin = selection.split(" - ")[0];
-            String token = transferService.initiateTransfer(vehicleVin, currentUserId, buyerMobile);
+            String token = transferService.initiateTransfer(vehicleVin, currentUserId, buyerUsername);
             
             if (token != null) {
-                tokenLabel.setText("✅ Transfer Token: " + token);
-                tokenLabel.setStyle("-fx-text-fill: green; -fx-font-size: 16px; -fx-font-weight: bold;");
+                tokenLabel.setText("✅ Transfer Token: " + token + "\nShare this token with buyer '" + buyerUsername + "'");
+                tokenLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 15; -fx-background-color: #d5f4e6; -fx-border-color: #27ae60; -fx-border-width: 2;");
                 tokenLabel.setVisible(true);
                 
                 showSuccess("Transfer initiated! Share this token with buyer: " + token);
                 
-                buyerMobileField.clear();
+                buyerUsernameField.clear();
                 initiateTransferBtn.setDisable(true);
             } else {
                 showError("Transfer initiation failed. Check console for details.");
@@ -162,10 +179,10 @@ public class TransferController {
             boolean success = transferService.completeTransferByBuyer(token, currentUserId);
             
             if (success) {
-                showBuyerSuccess("Transfer confirmed! Payment recorded. Awaiting RTO approval.");
+                showBuyerSuccess("✅ Transfer confirmed! Payment recorded. Awaiting RTO approval.");
                 tokenInputField.clear();
             } else {
-                showBuyerError("Invalid or expired token. Please check and try again.");
+                showBuyerError("❌ Invalid or expired token. Please check and try again.");
             }
             
         } catch (Exception e) {
@@ -178,32 +195,32 @@ public class TransferController {
     private void showValidation(String message, boolean valid) {
         validationResultLabel.setText(message);
         validationResultLabel.setStyle(valid ? 
-            "-fx-text-fill: green;" : 
-            "-fx-text-fill: red;");
+            "-fx-text-fill: green; -fx-padding: 10; -fx-background-color: #d5f4e6;" : 
+            "-fx-text-fill: red; -fx-padding: 10; -fx-background-color: #fde8e8;");
         validationResultLabel.setVisible(true);
     }
     
     private void showSuccess(String message) {
         validationResultLabel.setText(message);
-        validationResultLabel.setStyle("-fx-text-fill: green;");
+        validationResultLabel.setStyle("-fx-text-fill: green; -fx-padding: 10; -fx-background-color: #d5f4e6;");
         validationResultLabel.setVisible(true);
     }
     
     private void showError(String message) {
         validationResultLabel.setText(message);
-        validationResultLabel.setStyle("-fx-text-fill: red;");
+        validationResultLabel.setStyle("-fx-text-fill: red; -fx-padding: 10; -fx-background-color: #fde8e8;");
         validationResultLabel.setVisible(true);
     }
     
     private void showBuyerSuccess(String message) {
         buyerStatusLabel.setText(message);
-        buyerStatusLabel.setStyle("-fx-text-fill: green;");
+        buyerStatusLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px; -fx-padding: 10; -fx-background-color: #d5f4e6;");
         buyerStatusLabel.setVisible(true);
     }
     
     private void showBuyerError(String message) {
         buyerStatusLabel.setText(message);
-        buyerStatusLabel.setStyle("-fx-text-fill: red;");
+        buyerStatusLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px; -fx-padding: 10; -fx-background-color: #fde8e8;");
         buyerStatusLabel.setVisible(true);
     }
 }

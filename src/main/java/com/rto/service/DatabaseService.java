@@ -403,6 +403,36 @@ public class DatabaseService {
     }
   }
 
+  public boolean deleteUserCascade(String userId) {
+    try {
+      // Begin transaction manually if supported, but simpler is sequential deletes.
+      // H2 will throw if constraint violations occur unless we delete children first.
+      
+      // Phase 1/4: Delete child records
+      executeUpdate("DELETE FROM vehicles WHERE owner_id = ?", userId);
+      executeUpdate("DELETE FROM licenses WHERE user_id = ?", userId);
+      executeUpdate("DELETE FROM transactions WHERE user_id = ?", userId);
+      executeUpdate("DELETE FROM applications WHERE applicant_id = ?", userId);
+      executeUpdate("DELETE FROM vehicle_requests WHERE applicant_id = ?", userId);
+      executeUpdate("DELETE FROM cbt_results WHERE user_id = ?", userId);
+      executeUpdate("DELETE FROM slot_bookings WHERE user_id = ?", userId);
+      
+      // transfer_requests might involve them as seller or buyer
+      executeUpdate("DELETE FROM transfer_requests WHERE seller_id = ? OR buyer_id = ?", userId, userId);
+      
+      // Finally delete user
+      boolean success = executeUpdate("DELETE FROM users WHERE id = ?", userId);
+      if (success) {
+          System.out.println("✅ Successfully deleted user (and associated records): " + userId);
+      }
+      return success;
+      
+    } catch (Exception e) {
+      System.err.println("❌ ERROR: Failed to cascade delete user: " + e.getMessage());
+      return false;
+    }
+  }
+
   public void close() {
     try {
       if (connection != null && !connection.isClosed()) {
