@@ -74,6 +74,10 @@ public class DashboardController {
   }
 
   private void setupCitizenTabs() {
+    Tab myVehiclesTab = new Tab("My Vehicles");
+    myVehiclesTab.setClosable(false);
+    myVehiclesTab.setContent(wrapInScrollPane(createMyVehiclesPane()));
+
     Tab myRequestsTab = new Tab("My Requests");
     myRequestsTab.setClosable(false);
     myRequestsTab.setContent(wrapInScrollPane(createMyRequestsPane()));
@@ -82,7 +86,7 @@ public class DashboardController {
     myChallansTab.setClosable(false);
     myChallansTab.setContent(wrapInScrollPane(createMyChallansPane()));
 
-    mainTabPane.getTabs().addAll(myRequestsTab, myChallansTab);
+    mainTabPane.getTabs().addAll(myVehiclesTab, myRequestsTab, myChallansTab);
   }
 
   private ScrollPane wrapInScrollPane(javafx.scene.Node content) {
@@ -90,6 +94,73 @@ public class DashboardController {
     sp.setFitToWidth(true);
     sp.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
     return sp;
+  }
+  @SuppressWarnings("unchecked")
+  private VBox createMyVehiclesPane() {
+    VBox container = new VBox(15);
+    container.setStyle("-fx-padding: 20;");
+
+    Label header = new Label("My Registered Vehicles");
+    header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+    Label infoLabel = new Label("All vehicles currently registered under your name.");
+    infoLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 13px;");
+
+    TableView<com.rto.model.Vehicle> table = new TableView<>();
+    table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+    TableColumn<com.rto.model.Vehicle, String> regCol = new TableColumn<>("Registration No.");
+    regCol.setCellValueFactory(new PropertyValueFactory<>("registrationNumber"));
+    regCol.setStyle("-fx-alignment: CENTER; -fx-font-weight: bold;");
+
+    TableColumn<com.rto.model.Vehicle, String> modelCol = new TableColumn<>("Model");
+    modelCol.setCellValueFactory(new PropertyValueFactory<>("model"));
+    modelCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Vehicle, String> typeCol = new TableColumn<>("Type");
+    typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+    typeCol.setStyle("-fx-alignment: CENTER;");
+    typeCol.setCellFactory(col -> new TableCell<>() {
+      @Override
+      protected void updateItem(String type, boolean empty) {
+        super.updateItem(type, empty);
+        if (empty || type == null) {
+          setText(null); setStyle("");
+        } else {
+          setText(type);
+          switch (type.toUpperCase()) {
+            case "CAR" -> setStyle("-fx-text-fill: #2980B9; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            case "BIKE" -> setStyle("-fx-text-fill: #8E44AD; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            case "TRUCK" -> setStyle("-fx-text-fill: #D35400; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            default -> setStyle("-fx-alignment: CENTER;");
+          }
+        }
+      }
+    });
+
+    TableColumn<com.rto.model.Vehicle, String> colorCol = new TableColumn<>("Color");
+    colorCol.setCellValueFactory(new PropertyValueFactory<>("color"));
+    colorCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.model.Vehicle, Integer> yearCol = new TableColumn<>("Year");
+    yearCol.setCellValueFactory(new PropertyValueFactory<>("manufacturingYear"));
+    yearCol.setStyle("-fx-alignment: CENTER;");
+
+    table.getColumns().addAll(regCol, modelCol, typeCol, colorCol, yearCol);
+
+    // Load vehicles
+    Runnable refreshAction = () -> {
+      String userId = SessionManager.getInstance().getCurrentUser().getId();
+      java.util.List<com.rto.model.Vehicle> vehicles = new com.rto.service.VehicleService().getVehiclesByOwnerId(userId);
+      table.setItems(FXCollections.observableArrayList(vehicles));
+    };
+    refreshAction.run();
+
+    Button refreshBtn = new Button("Refresh");
+    refreshBtn.setOnAction(e -> refreshAction.run());
+
+    container.getChildren().addAll(header, infoLabel, table, refreshBtn);
+    return container;
   }
 
   @SuppressWarnings("unchecked")
@@ -299,6 +370,11 @@ public class DashboardController {
     vehicleRequestsTab.setClosable(false);
     vehicleRequestsTab.setContent(wrapInScrollPane(createVehicleRequestsPane()));
 
+    // Transfer Requests Tab (NEW - for approving ownership transfers)
+    Tab transferRequestsTab = new Tab("Transfer Requests");
+    transferRequestsTab.setClosable(false);
+    transferRequestsTab.setContent(wrapInScrollPane(createTransferRequestsPane()));
+
     // Users Management Tab
     usersTab = new Tab("Manage Users");
     usersTab.setClosable(false);
@@ -309,7 +385,7 @@ public class DashboardController {
     challansTab.setClosable(false);
     challansTab.setContent(wrapInScrollPane(createChallansPane()));
 
-    mainTabPane.getTabs().addAll(applicationsTab, vehicleRequestsTab, usersTab, challansTab);
+    mainTabPane.getTabs().addAll(applicationsTab, vehicleRequestsTab, transferRequestsTab, usersTab, challansTab);
   }
 
   @SuppressWarnings("unchecked")
@@ -402,6 +478,120 @@ public class DashboardController {
 
   private void refreshVehicleRequestsTable(TableView<com.rto.model.VehicleRequest> table) {
     java.util.List<com.rto.model.VehicleRequest> pending = rtoFacade.getPendingVehicleRequests();
+    table.setItems(FXCollections.observableArrayList(pending));
+  }
+
+  @SuppressWarnings("unchecked")
+  private VBox createTransferRequestsPane() {
+    VBox container = new VBox(15);
+    container.setStyle("-fx-padding: 20;");
+
+    Label header = new Label("Pending Vehicle Transfer Requests");
+    header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+    Label infoLabel = new Label("Approve or reject vehicle ownership transfers after buyer payment confirmation.");
+    infoLabel.setStyle("-fx-text-fill: #7F8C8D;");
+
+    TableView<com.rto.service.TransferService.TransferRequest> table = new TableView<>();
+    table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, String> idCol = new TableColumn<>("Transfer ID");
+    idCol.setCellValueFactory(new PropertyValueFactory<>("transferId"));
+    idCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, String> vehicleCol = new TableColumn<>("Vehicle");
+    vehicleCol.setCellValueFactory(new PropertyValueFactory<>("vehicleVin"));
+    vehicleCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, String> sellerCol = new TableColumn<>("Seller ID");
+    sellerCol.setCellValueFactory(new PropertyValueFactory<>("sellerId"));
+    sellerCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, String> buyerCol = new TableColumn<>("Buyer ID");
+    buyerCol.setCellValueFactory(new PropertyValueFactory<>("buyerId"));
+    buyerCol.setStyle("-fx-alignment: CENTER;");
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, String> statusCol = new TableColumn<>("Status");
+    statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+    statusCol.setStyle("-fx-alignment: CENTER;");
+    statusCol.setCellFactory(col -> new TableCell<>() {
+      @Override
+      protected void updateItem(String status, boolean empty) {
+        super.updateItem(status, empty);
+        if (empty || status == null) {
+          setText(null);
+          setStyle("");
+        } else {
+          setText(status);
+          switch (status) {
+            case "PAYMENT_DONE" -> setStyle("-fx-text-fill: #F39C12; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            case "COMPLETED" -> setStyle("-fx-text-fill: #27AE60; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            case "REJECTED" -> setStyle("-fx-text-fill: #E74C3C; -fx-font-weight: bold; -fx-alignment: CENTER;");
+            default -> setStyle("-fx-alignment: CENTER;");
+          }
+        }
+      }
+    });
+
+    TableColumn<com.rto.service.TransferService.TransferRequest, Void> actionCol = new TableColumn<>("Actions");
+    actionCol.setPrefWidth(250);
+    actionCol.setMinWidth(250);
+    actionCol.setCellFactory(col -> new TableCell<>() {
+      private final Button approveBtn = new Button("Approve");
+      private final Button rejectBtn = new Button("Reject");
+      {
+        approveBtn.setMinWidth(90);
+        approveBtn.setPrefWidth(90);
+        rejectBtn.setMinWidth(80);
+        rejectBtn.setPrefWidth(80);
+        approveBtn.setStyle(
+            "-fx-background-color: #27AE60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 12; -fx-background-radius: 5;");
+        rejectBtn.setStyle(
+            "-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 12; -fx-background-radius: 5;");
+
+        approveBtn.setOnAction(e -> {
+          com.rto.service.TransferService.TransferRequest request = getTableView().getItems().get(getIndex());
+          if (rtoFacade.approveTransfer(request.getTransferId())) {
+            refreshTransferRequestsTable(table);
+            showAlert("Transfer Approved", "Vehicle ownership has been transferred successfully!\nVehicle: " + request.getVehicleVin());
+          } else {
+            showAlert("Error", "Failed to approve transfer. Check console for details.");
+          }
+        });
+
+        rejectBtn.setOnAction(e -> {
+          com.rto.service.TransferService.TransferRequest request = getTableView().getItems().get(getIndex());
+          if (rtoFacade.rejectTransfer(request.getTransferId(), "Rejected by admin")) {
+            refreshTransferRequestsTable(table);
+            showAlert("Transfer Rejected", "Transfer request has been rejected.");
+          }
+        });
+      }
+
+      @Override
+      protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty) {
+          setGraphic(null);
+        } else {
+          javafx.scene.layout.HBox hbox = new javafx.scene.layout.HBox(5, approveBtn, rejectBtn);
+          setGraphic(hbox);
+        }
+      }
+    });
+
+    table.getColumns().addAll(idCol, vehicleCol, sellerCol, buyerCol, statusCol, actionCol);
+    refreshTransferRequestsTable(table);
+
+    Button refreshBtn = new Button("Refresh");
+    refreshBtn.setOnAction(e -> refreshTransferRequestsTable(table));
+
+    container.getChildren().addAll(header, infoLabel, table, refreshBtn);
+    return container;
+  }
+
+  private void refreshTransferRequestsTable(TableView<com.rto.service.TransferService.TransferRequest> table) {
+    java.util.List<com.rto.service.TransferService.TransferRequest> pending = rtoFacade.getPendingTransfers();
     table.setItems(FXCollections.observableArrayList(pending));
   }
 

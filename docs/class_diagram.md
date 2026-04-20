@@ -235,8 +235,6 @@ end note
 note left of Vehicle #Gold
   **==> B ==>**
   To Diagram 3:
-  TaxCalculationStrategy
-  VehicleFeatureDecorator
   VehicleBuilder
   To Diagram 4:
   VehicleService
@@ -289,36 +287,6 @@ note top of VehicleRef #Gold
   **<== B <==**
   From Diagram 2
 end note
-
-' ===== STRATEGY PATTERN =====
-
-interface TaxCalculationStrategy {
-  + calculateTax(v : Vehicle) : double
-  + getStrategyName() : String
-}
-
-class StandardTaxStrategy {
-  + calculateTax(v : Vehicle) : double
-  + getStrategyName() : String
-}
-
-class PremiumTaxStrategy {
-  + calculateTax(v : Vehicle) : double
-  + getStrategyName() : String
-}
-
-class CommercialTaxStrategy {
-  + calculateTax(v : Vehicle) : double
-  + getStrategyName() : String
-}
-
-TaxCalculationStrategy <|.. StandardTaxStrategy
-TaxCalculationStrategy <|.. PremiumTaxStrategy
-TaxCalculationStrategy <|.. CommercialTaxStrategy
-
-TaxCalculationStrategy ..> VehicleRef : uses >
-
-note top of TaxCalculationStrategy : <<Strategy Pattern>>
 
 ' ===== OBSERVER PATTERN =====
 
@@ -396,36 +364,6 @@ note right of IPaymentProcessor #Gold
   To Diagram 4:
   RTOSystemFacade
 end note
-
-' ===== DECORATOR PATTERN =====
-
-abstract class VehicleFeatureDecorator {
-  # decoratedVehicle : Vehicle
-  --
-  + calculateTotalCost() : double
-  + {abstract} getAdditionalCost() : double
-  + {abstract} getFeatureDescription() : String
-}
-
-class InsuranceDecorator {
-  - INSURANCE_COST : double = 15000.0
-  --
-  + getAdditionalCost() : double
-  + getFeatureDescription() : String
-}
-
-class ExtendedWarrantyDecorator {
-  - WARRANTY_COST : double = 8000.0
-  --
-  + getAdditionalCost() : double
-  + getFeatureDescription() : String
-}
-
-VehicleFeatureDecorator <|-- InsuranceDecorator
-VehicleFeatureDecorator <|-- ExtendedWarrantyDecorator
-VehicleFeatureDecorator o-- VehicleRef : decorates >
-
-note left of VehicleFeatureDecorator : <<Decorator Pattern>>
 
 ' ===== BUILDER PATTERN =====
 
@@ -743,19 +681,17 @@ class ValidationEngine {
 | **D** | Diagram 3: `NotificationSubject` | Diagram 4: `LicenseService` |
 | **E** | Diagram 3: `IPaymentProcessor` | Diagram 4: `RTOSystemFacade` |
 
-## Design Patterns (9 total)
+## Design Patterns (7 total)
 
 | # | Pattern | Key Classes | Diagram |
 |---|---|---|:---:|
 | 1 | Inheritance + Polymorphism | User and Vehicle hierarchies | 1, 2 |
-| 2 | Strategy | TaxCalculationStrategy + 3 impl | 3 |
-| 3 | Observer | NotificationSubject + EmailNotifier, SMSNotifier | 3 |
-| 4 | Adapter | PaymentGatewayAdapter + SimulatedThirdPartyPaymentAPI | 3 |
-| 5 | Decorator | VehicleFeatureDecorator + Insurance, Warranty | 3 |
-| 6 | Builder | VehicleBuilder | 3 |
-| 7 | Singleton | DatabaseService, SessionManager | 4 |
-| 8 | Factory | ServiceFactory | 4 |
-| 9 | Facade | RTOSystemFacade | 4 |
+| 2 | Observer | NotificationSubject + EmailNotifier, SMSNotifier | 3 |
+| 3 | Adapter | PaymentGatewayAdapter + SimulatedThirdPartyPaymentAPI | 3 |
+| 4 | Builder | VehicleBuilder | 3 |
+| 5 | Singleton | DatabaseService, SessionManager | 4 |
+| 6 | Factory | ServiceFactory | 4 |
+| 7 | Facade | RTOSystemFacade | 4 |
 
 ## UML Compliance
 

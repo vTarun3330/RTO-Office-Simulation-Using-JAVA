@@ -309,6 +309,42 @@ public class RTOSystemFacade {
     return licenseService.getAllLicenses();
   }
 
+  // ==================== TRANSFER APPROVAL OPERATIONS (Admin) ====================
+
+  /**
+   * Get all pending transfer requests awaiting admin approval.
+   */
+  public java.util.List<TransferService.TransferRequest> getPendingTransfers() {
+    if (!isAdmin()) return java.util.List.of();
+    TransferService transferService = new TransferService();
+    return transferService.getAllPendingTransfers();
+  }
+
+  /**
+   * Approve a transfer request (Admin only).
+   * This updates the vehicle's owner_id in the vehicles table.
+   */
+  public boolean approveTransfer(String transferId) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can approve transfers");
+      return false;
+    }
+    TransferService transferService = new TransferService();
+    return transferService.approveTransfer(transferId, getCurrentUser().getId());
+  }
+
+  /**
+   * Reject a transfer request (Admin only).
+   */
+  public boolean rejectTransfer(String transferId, String reason) {
+    if (!isAdmin()) {
+      System.out.println("Only admin can reject transfers");
+      return false;
+    }
+    TransferService transferService = new TransferService();
+    return transferService.rejectTransfer(transferId, getCurrentUser().getId(), reason);
+  }
+
   // ==================== VEHICLE REQUEST OPERATIONS (Approval Workflow)
   // ====================
 
