@@ -3,13 +3,15 @@ package com.rto.service;
 import java.sql.*;
 import java.util.*;
 
+import com.rto.service.evaluation.IEvaluationStrategy;
+import com.rto.service.evaluation.EvaluationStrategyFactory;
+
 /**
  * CBT (Computer-Based Test) Service - Handles Learner's License Test
  * Implements automated quiz evaluation for LL applications
  */
 public class CBTService implements IService {
     private DatabaseService db;
-    private static final int PASS_PERCENTAGE = 60;
     private static final int QUESTIONS_PER_TEST = 10;
 
     public CBTService() {
@@ -54,6 +56,7 @@ public class CBTService implements IService {
         }
 
         int correctCount = 0;
+        int attemptedCount = answers.size();
 
         // Get correct answers from database
         for (String questionId : answers.keySet()) {
@@ -70,9 +73,14 @@ public class CBTService implements IService {
             totalQuestions = 10; // Default
         }
 
+        // Determine the evaluation strategy (e.g. from an admin configuration). 
+        // Using STANDARD for now, but easily interchangeable per OCP.
+        String evaluationType = "STANDARD"; 
+        IEvaluationStrategy strategy = EvaluationStrategyFactory.getStrategy(evaluationType);
+
         // Calculate score percentage
-        int scorePercentage = (correctCount * 100) / totalQuestions;
-        boolean passed = scorePercentage >= PASS_PERCENTAGE;
+        int scorePercentage = strategy.calculateScorePercentage(correctCount, totalQuestions, attemptedCount);
+        boolean passed = strategy.isPassed(correctCount, totalQuestions, attemptedCount);
 
         // Save result
         CBTResult result = new CBTResult();
